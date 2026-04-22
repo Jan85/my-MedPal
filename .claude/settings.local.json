@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:claude.ai)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(ipconfig)",
+      "Bash(python -m http.server 3000)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/MedPal.html)"
+    ]
+  }
+}

@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MedPal</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#7FD1AE;--mint:#7FD1AE;--mint-600:#5DBA93;--mint-700:#3E9E75;
+  --mint-50:#EAF7F0;--mint-100:#D6EFDF;
+  --beige:#F5EFE4;--cream:#FBF8F1;--paper:#FFFFFF;
+  --coral:#E8896B;--amber:#E5B769;--sky:#7BB0D6;
+  --ink:#1B2420;--ink-2:#3C4A44;--ink-3:#6B7A74;--ink-4:#9BA7A2;--hair:#E8E2D4;
+  --sh-1:0 1px 2px rgba(27,36,32,.04),0 2px 8px rgba(27,36,32,.04);
+  --sh-2:0 2px 6px rgba(27,36,32,.05),0 8px 24px rgba(27,36,32,.06);
+  --sh-3:0 8px 24px rgba(27,36,32,.08),0 24px 48px rgba(27,36,32,.08);
+  --sh-mint:0 8px 24px rgba(127,209,174,.30),0 2px 6px rgba(62,158,117,.15);
+  --sans:-apple-system,"SF Pro Text","PingFang SC",system-ui,sans-serif;
+  --serif:"New York","SF Pro Display","Songti SC",Georgia,serif;
+  --mono:"SF Mono",ui-monospace,Menlo,monospace;
+}
+html,body{height:100%;-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(1200px 800px at 50% 40%,#F3EEE1,#E0DBCB 70%);
+  min-height:100vh;font-family:var(--sans)}
+@keyframes mp-wave{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+@keyframes mp-fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes mp-spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--hair);border-radius:3px}
+
+.stage{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:68px 20px 32px}
+.phone-shell{width:390px;height:844px;border-radius:56px;background:#1A2320;padding:10px;
+  box-shadow:0 50px 100px rgba(27,36,32,.26),0 20px 40px rgba(27,36,32,.16),
+    inset 0 0 0 1px rgba(255,255,255,.05),inset 0 2px 4px rgba(255,255,255,.08);
+  position:relative;flex-shrink:0}
+.phone-island{position:absolute;top:24px;left:50%;transform:translateX(-50%);
+  width:122px;height:34px;border-radius:20px;background:#000;z-index:200;pointer-events:none}
+.phone-homebar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+  width:134px;height:5px;border-radius:100px;background:rgba(255,255,255,.28);
+  z-index:200;pointer-events:none}
+.phone-inner{width:100%;height:100%;border-radius:46px;overflow:hidden;
+  position:relative;background:#FBF8F1}
+.caption{margin-top:12px;font-size:11px;color:#9BA7A2;
+  font-family:var(--mono);letter-spacing:.5px;text-align:center}
+
+/* Screen layout */
+.screen{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.screen-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen-pad{padding:0 20px 20px}
+
+/* Status bar */
+.sbar{height:50px;display:flex;align-items:flex-end;padding-bottom:10px;
+  padding-left:24px;padding-right:20px;flex-shrink:0}
+.sbar-time{font-size:15px;font-weight:700}
+.sbar-icons{display:flex;gap:6px;align-items:center;margin-left:auto}
+
+/* Tab bar */
+.tabbar{height:80px;border-top:1px solid var(--hair);display:flex;align-items:flex-start;
+  padding-top:6px;flex-shrink:0;background:rgba(251,248,241,.96);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.tab-btn{flex:1;border:none;background:transparent;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px}
+.tab-label{font-size:10px;font-weight:500;line-height:1.2}
+
+/* Nav pill */
+.nav-pill{position:fixed;top:14px;left:50%;transform:translateX(-50%);
+  display:flex;flex-wrap:wrap;justify-content:center;gap:2px;padding:5px 6px;
+  background:rgba(255,255,255,.93);-webkit-backdrop-filter:blur(16px);
+  backdrop-filter:blur(16px);border-radius:999px;z-index:500;
+  box-shadow:0 4px 16px rgba(27,36,32,.10);max-width:calc(100vw - 24px)}
+.nav-btn{border:none;cursor:pointer;padding:5px 10px;border-radius:999px;
+  font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;
+  text-transform:capitalize}
+
+/* Buttons */
+.btn{border:none;cursor:pointer;font-family:inherit;display:inline-flex;
+  align-items:center;justify-content:center;gap:8px;border-radius:14px;
+  font-weight:600;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:var(--sh-mint)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-ghost{background:var(--paper);color:var(--ink);box-shadow:var(--sh-1)}
+.btn-icon{width:36px;height:36px;border-radius:12px;background:var(--paper);
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-1)}
+
+/* Cards */
+.card{background:var(--paper);border-radius:16px;box-shadow:var(--sh-1)}
+.card-lg{border-radius:20px;box-shadow:var(--sh-2)}
+
+/* Flip card */
+.flip-card{perspective:1400px;cursor:pointer;height:310px;user-select:none;
+  -webkit-tap-highlight-color:transparent}
+.flip-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;
+  transition:transform .7s cubic-bezier(.7,.1,.3,1)}
+.flip-inner.flipped{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;-webkit-backface-visibility:hidden;
+  backface-visibility:hidden;border-radius:22px;background:var(--paper);
+  box-shadow:var(--sh-3);overflow:hidden}
+.flip-back{transform:rotateY(180deg)}
+
+/* Wave bars */
+.wave-wrap{display:flex;gap:3px;align-items:center;height:18px}
+.wave-bar{width:3px;background:var(--accent);border-radius:2px;height:100%;transform:scaleY(.35)}
+.wave-bar.active{animation:mp-wave 1s infinite}
+.wave-bar:nth-child(2).active{animation-delay:.1s}
+.wave-bar:nth-child(3).active{animation-delay:.2s}
+.wave-bar:nth-child(4).active{animation-delay:.3s}
+
+/* Progress bar */
+.prog-wrap{height:4px;background:var(--hair);border-radius:4px}
+.prog-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .3s}
+
+/* Tweaks */
+.tweaks-btn{position:fixed;bottom:22px;right:22px;width:44px;height:44px;
+  border-radius:14px;border:none;cursor:pointer;background:var(--paper);
+  box-shadow:var(--sh-2);display:flex;align-items:center;justify-content:center;z-index:1001}
+.tweaks-panel{position:fixed;bottom:76px;right:22px;background:var(--paper);
+  border-radius:20px;padding:16px;width:228px;box-shadow:var(--sh-3);z-index:1000;
+  animation:mp-fadein .2s ease;font-family:var(--sans)}
+
+/* Input */
+input{font-family:inherit;font-size:15px;color:var(--ink);outline:none;
+  background:var(--paper);transition:border .2s;-webkit-appearance:none}
+
+/* Tag */
+.tag{display:inline-flex;align-items:center;gap:4px;border-radius:8px;
+  padding:4px 9px;font-size:12px;font-weight:700}
+
+/* Section label */
+.sec-label{font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;
+  letter-spacing:.6px;margin-bottom:10px}
+
+/* Body part / symptom buttons */
+.chip-btn{border:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;
+  padding:7px 12px;border-radius:10px;transition:all .15s;-webkit-tap-highlight-color:transparent}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════════════════════════ */
+const ACCENT_COLORS={
+  mint:    {main:'#7FD1AE',d600:'#5DBA93',d700:'#3E9E75',l50:'#EAF7F0',l100:'#D6EFDF'},
+  coral:   {main:'#E8896B',d600:'#D26B4C',d700:'#B15233',l50:'#FBEEE8',l100:'#F4D5C7'},
+  lavender:{main:'#B8A4D4',d600:'#9A83BC',d700:'#7B669B',l50:'#F0EBF6',l100:'#DED2EC'},
+  slate:   {main:'#7B9BA8',d600:'#5D7E8D',d700:'#456674',l50:'#E9F0F3',l100:'#CADBE2'},
+};
+
+const VOCAB=[
+  // ── CARDIOLOGY ──────────────────────────────────────────────────────────
+  {id:1,word:'Cardiac',ipa:'/ˈkɑːdiæk/',pos:'adj.',zh:'心脏的',def:'Relating to the heart',
+   sentence:'The patient was admitted for cardiac monitoring overnight.',
+   zhSentence:'病人被收入院进行心脏监测。',mnemonic:'Cardi-(心脏) + -ac',book:'cardiology',emoji:'🫀'},
+  {id:2,word:'Hypertension',ipa:'/ˌhaɪpəˈtenʃən/',pos:'n.',zh:'高血压',def:'Abnormally high blood pressure',
+   sentence:'Uncontrolled hypertension can damage the arteries over time.',
+   zhSentence:'未控制的高血压会随时间损伤动脉。',mnemonic:'Hyper-(过高) + tension(压力)',book:'cardiology',emoji:'💓'},
+  {id:3,word:'Palpitation',ipa:'/ˌpælpɪˈteɪʃən/',pos:'n.',zh:'心悸',def:'Rapid or irregular heartbeat you can feel',
+   sentence:'She experienced palpitations after drinking too much coffee.',
+   zhSentence:'喝了太多咖啡后她感到心悸。',mnemonic:'Palpit-(跳动) + -ation',book:'cardiology',emoji:'💗'},
+  {id:4,word:'Artery',ipa:'/ˈɑːtəri/',pos:'n.',zh:'动脉',def:'Blood vessel carrying blood away from the heart',
+   sentence:'The surgeon repaired the blocked artery successfully.',
+   zhSentence:'外科医生成功修复了堵塞的动脉。',mnemonic:'Art-(出发) → 血液从心脏出发的管道',book:'cardiology',emoji:'🩸'},
+  {id:5,word:'Cholesterol',ipa:'/kəˈlestərɒl/',pos:'n.',zh:'胆固醇',def:'Fatty substance in blood; high levels are harmful',
+   sentence:'He was advised to reduce his cholesterol through a better diet.',
+   zhSentence:'他被建议通过改善饮食来降低胆固醇。',mnemonic:'Chole-(胆) + sterol(固醇) → 胆汁中的固醇',book:'cardiology',emoji:'🧈'},
+  // ── ANATOMY ─────────────────────────────────────────────────────────────
+  {id:6,word:'Pulmonary',ipa:'/ˈpʌlməneri/',pos:'adj.',zh:'肺部的',def:'Relating to the lungs',
+   sentence:'A pulmonary embolism requires immediate treatment.',
+   zhSentence:'肺栓塞需要立即治疗。',mnemonic:'Pulmon-(肺) + -ary',book:'anatomy',emoji:'🫁'},
+  {id:7,word:'Fracture',ipa:'/ˈfræktʃər/',pos:'n./v.',zh:'骨折',def:'A break or crack in a bone',
+   sentence:'She suffered a stress fracture in her left foot.',
+   zhSentence:'她的左脚出现了应力性骨折。',mnemonic:'Fract-(断裂) + -ure',book:'anatomy',emoji:'🦴'},
+  {id:8,word:'Ligament',ipa:'/ˈlɪɡəmənt/',pos:'n.',zh:'韧带',def:'Tissue that connects bones at a joint',
+   sentence:'He tore his knee ligament during the soccer game.',
+   zhSentence:'他在足球比赛中撕裂了膝盖韧带。',mnemonic:'Liga-(绑定) + -ment → 把骨头绑在一起',book:'anatomy',emoji:'🦵'},
+  {id:9,word:'Tendon',ipa:'/ˈtendən/',pos:'n.',zh:'肌腱',def:'Tissue connecting muscle to bone',
+   sentence:'The Achilles tendon is the largest tendon in the body.',
+   zhSentence:'跟腱是人体最大的肌腱。',mnemonic:'Ten-(伸展) → 肌肉伸展时拉动骨头',book:'anatomy',emoji:'💪'},
+  {id:10,word:'Vertebra',ipa:'/ˈvɜːtɪbrə/',pos:'n.',zh:'椎骨',def:'One of the small bones forming the spine',
+   sentence:'He had a slipped vertebra causing lower back pain.',
+   zhSentence:'他有一块椎骨滑位导致腰痛。',mnemonic:'Verteb-(转/脊) + -ra → 脊椎骨',book:'anatomy',emoji:'🔩'},
+  {id:11,word:'Abdomen',ipa:'/ˈæbdəmən/',pos:'n.',zh:'腹部',def:'The belly area between chest and hips',
+   sentence:'The doctor pressed on the abdomen to check for tenderness.',
+   zhSentence:'医生按压腹部检查是否有压痛。',mnemonic:'Ab-(下方区域) + domen(腹) → 腹部',book:'anatomy',emoji:'🫃'},
+  {id:12,word:'Respiratory',ipa:'/rɪˈspɪrətəri/',pos:'adj.',zh:'呼吸系统的',def:'Relating to breathing and the lungs',
+   sentence:'He has a history of respiratory problems due to smoking.',
+   zhSentence:'他因吸烟有呼吸系统问题的病史。',mnemonic:'Respir-(呼吸) + -atory → 与呼吸相关的',book:'anatomy',emoji:'🌬️'},
+  {id:13,word:'Neurological',ipa:'/ˌnjʊərəˈlɒdʒɪkəl/',pos:'adj.',zh:'神经系统的',def:'Relating to the brain and nervous system',
+   sentence:'Memory loss can be a neurological symptom.',
+   zhSentence:'记忆力减退可能是神经系统症状。',mnemonic:'Neuro-(神经) + logical → 神经系统相关',book:'anatomy',emoji:'🧠'},
+  {id:14,word:'Hemoglobin',ipa:'/ˈhiːməɡləʊbɪn/',pos:'n.',zh:'血红蛋白',def:'Protein in red blood cells that carries oxygen',
+   sentence:'Low hemoglobin levels indicate anemia.',
+   zhSentence:'血红蛋白水平低表明患有贫血。',mnemonic:'Hemo-(血) + globin(球蛋白) → 血中球形蛋白',book:'anatomy',emoji:'🔴'},
+  {id:15,word:'Hemorrhage',ipa:'/ˈhemərɪdʒ/',pos:'n.',zh:'出血',def:'Heavy or uncontrolled bleeding',
+   sentence:'The surgeon worked quickly to stop the internal hemorrhage.',
+   zhSentence:'外科医生迅速止住了内出血。',mnemonic:'Hemo-(血) + rrhage(涌出) → 大量出血',book:'anatomy',emoji:'🩸'},
+  // ── SYMPTOMS ────────────────────────────────────────────────────────────
+  {id:16,word:'Nausea',ipa:'/ˈnɔːziə/',pos:'n.',zh:'恶心',def:'Feeling of sickness with an urge to vomit',
+   sentence:'The medication may cause nausea on an empty stomach.',
+   zhSentence:'空腹服药可能会引起恶心。',mnemonic:'Naus-(晕船感) → 如坐船时的不适',book:'clinic',emoji:'😣'},
+  {id:17,word:'Fatigue',ipa:'/fəˈtiːɡ/',pos:'n.',zh:'疲劳',def:'Extreme tiredness and lack of energy',
+   sentence:'Chronic fatigue can be a sign of an underlying illness.',
+   zhSentence:'长期疲劳可能是潜在疾病的征兆。',mnemonic:'Fatig-(疲倦) → 精力耗尽的状态',book:'clinic',emoji:'😴'},
+  {id:18,word:'Dizziness',ipa:'/ˈdɪzinəs/',pos:'n.',zh:'头晕',def:'Feeling of spinning or being unsteady',
+   sentence:'The patient reported sudden dizziness and blurred vision.',
+   zhSentence:'患者报告突然头晕和视力模糊。',mnemonic:'Dizzy(眩晕) + -ness → 头晕的状态',book:'clinic',emoji:'🌀'},
+  {id:19,word:'Edema',ipa:'/ɪˈdiːmə/',pos:'n.',zh:'水肿',def:'Swelling caused by excess fluid in body tissues',
+   sentence:'Ankle edema is common in patients with heart failure.',
+   zhSentence:'踝部水肿在心力衰竭患者中很常见。',mnemonic:'Edem-(肿胀) → 液体积聚导致肿胀',book:'clinic',emoji:'💧'},
+  {id:20,word:'Fever',ipa:'/ˈfiːvər/',pos:'n.',zh:'发烧',def:'Body temperature above 38°C (100.4°F)',
+   sentence:'The child had a high fever and needed immediate attention.',
+   zhSentence:'孩子发高烧需要立即就医。',mnemonic:'"Feeling Very Hot" → 发烧',book:'clinic',emoji:'🌡️'},
+  {id:21,word:'Rash',ipa:'/ræʃ/',pos:'n.',zh:'皮疹',def:'Red, irritated, or bumpy area on the skin',
+   sentence:'She developed a rash after taking the new antibiotic.',
+   zhSentence:'服用新抗生素后她出现了皮疹。',mnemonic:'Rash → 皮肤"冒出"的红点',book:'clinic',emoji:'🔴'},
+  {id:22,word:'Numbness',ipa:'/ˈnʌmnəs/',pos:'n.',zh:'麻木',def:'Loss of sensation or feeling in a body part',
+   sentence:'He felt numbness in his fingers after the accident.',
+   zhSentence:'事故后他的手指感到麻木。',mnemonic:'Numb(麻木) + -ness → 感觉消失',book:'clinic',emoji:'🖐️'},
+  {id:23,word:'Shortness of breath',ipa:'/ˈʃɔːtnəs əv breθ/',pos:'n.',zh:'呼吸困难',def:'Difficulty breathing or feeling of not getting enough air',
+   sentence:'He called an ambulance when he felt shortness of breath.',
+   zhSentence:'当他感到呼吸困难时，他叫了救护车。',mnemonic:'Short(短促) + breath(呼吸) → 呼吸短促',book:'clinic',emoji:'😮‍💨'},
+  {id:24,word:'Vomiting',ipa:'/ˈvɒmɪtɪŋ/',pos:'n.',zh:'呕吐',def:'Forceful emptying of stomach contents through the mouth',
+   sentence:'The patient was vomiting and could not keep water down.',
+   zhSentence:'患者一直呕吐，连水都喝不下去。',mnemonic:'Vomit → 胃部内容物强制排出',book:'clinic',emoji:'🤢'},
+  {id:25,word:'Chills',ipa:'/tʃɪlz/',pos:'n.',zh:'畏寒/发冷',def:'Shivering and feeling cold, often with fever',
+   sentence:'She had a high fever and chills throughout the night.',
+   zhSentence:'她整晚高烧伴畏寒发冷。',mnemonic:'Chill → 感觉冷得发抖',book:'clinic',emoji:'🥶'},
+  // ── COMMON CONDITIONS ───────────────────────────────────────────────────
+  {id:26,word:'Diabetes',ipa:'/ˌdaɪəˈbiːtiːz/',pos:'n.',zh:'糖尿病',def:'Disease where blood sugar levels are too high',
+   sentence:'Managing diabetes requires regular blood sugar monitoring.',
+   zhSentence:'控制糖尿病需要定期监测血糖。',mnemonic:'Dia-(通过) + betes(流走) → 糖分流走(糖尿)',book:'clinic',emoji:'🍬'},
+  {id:27,word:'Arthritis',ipa:'/ɑːrˈθraɪtɪs/',pos:'n.',zh:'关节炎',def:'Painful inflammation of one or more joints',
+   sentence:'Her arthritis makes it hard to open jars in the morning.',
+   zhSentence:'关节炎使她早晨很难打开瓶盖。',mnemonic:'Arthr-(关节) + -itis(炎症) → 关节炎',book:'anatomy',emoji:'🦴'},
+  {id:28,word:'Asthma',ipa:'/ˈæzmə/',pos:'n.',zh:'哮喘',def:'Condition causing difficulty breathing and wheezing',
+   sentence:'She always carries her inhaler to manage her asthma.',
+   zhSentence:'她总是随身携带吸入器来控制哮喘。',mnemonic:'Asthm-(气喘) + -a → 气道痉挛喘息',book:'clinic',emoji:'🌬️'},
+  {id:29,word:'Migraine',ipa:'/ˈmaɪɡreɪn/',pos:'n.',zh:'偏头痛',def:'Severe headache, often with nausea and light sensitivity',
+   sentence:'She needed to lie in a dark room during her migraine attack.',
+   zhSentence:'偏头痛发作时她需要躺在暗室里。',mnemonic:'Mi-(一侧) + graine(头) → 一侧头痛',book:'clinic',emoji:'🤕'},
+  {id:30,word:'Anemia',ipa:'/əˈniːmiə/',pos:'n.',zh:'贫血',def:'Not enough healthy red blood cells to carry oxygen',
+   sentence:'Iron supplements can help treat mild anemia.',
+   zhSentence:'补铁可以帮助治疗轻度贫血。',mnemonic:'An-(缺乏) + -emia(血) → 血液不足',book:'clinic',emoji:'🩸'},
+  {id:31,word:'Pneumonia',ipa:'/njuːˈməʊniə/',pos:'n.',zh:'肺炎',def:'Lung infection causing cough, fever, and breathing difficulty',
+   sentence:'Bacterial pneumonia is usually treated with antibiotics.',
+   zhSentence:'细菌性肺炎通常用抗生素治疗。',mnemonic:'Pneumon-(肺) + -ia → 肺部感染',book:'clinic',emoji:'🫁'},
+  {id:32,word:'Sprain',ipa:'/spreɪn/',pos:'n./v.',zh:'扭伤',def:'Injury to ligaments from overstretching',
+   sentence:'She sprained her ankle stepping off the curb.',
+   zhSentence:'她踩下路沿时扭伤了脚踝。',mnemonic:'"spring + pain" → 弹跳后的疼痛',book:'anatomy',emoji:'🦶'},
+  {id:33,word:'Concussion',ipa:'/kənˈkʌʃən/',pos:'n.',zh:'脑震荡',def:'Brain injury from a blow or jolt to the head',
+   sentence:'Rest is essential for recovery from a concussion.',
+   zhSentence:'充分休息是脑震荡康复的关键。',mnemonic:'Con-(共同) + cussion(震动) → 脑部受到震动',book:'clinic',emoji:'🧠'},
+  {id:34,word:'Infection',ipa:'/ɪnˈfekʃən/',pos:'n.',zh:'感染',def:'Disease caused by bacteria, viruses, or other germs entering the body',
+   sentence:'Keep the wound clean to prevent infection.',
+   zhSentence:'保持伤口清洁以防止感染。',mnemonic:'In-(进入) + fect-(影响) → 细菌进入并影响身体',book:'clinic',emoji:'🦠'},
+  {id:35,word:'Dehydration',ipa:'/ˌdiːhaɪˈdreɪʃən/',pos:'n.',zh:'脱水',def:'Losing more fluids than you take in',
+   sentence:'Drink plenty of water to prevent dehydration in hot weather.',
+   zhSentence:'在炎热天气多喝水以防止脱水。',mnemonic:'De-(去除) + hydrat-(水) → 失去水分',book:'clinic',emoji:'🥤'},
+  {id:36,word:'Bronchitis',ipa:'/brɒŋˈkaɪtɪs/',pos:'n.',zh:'支气管炎',def:'Inflammation of the airways in the lungs',
+   sentence:'He developed bronchitis after his cold got worse.',
+   zhSentence:'感冒加重后他患上了支气管炎。',mnemonic:'Bronch-(支气管) + -itis(炎症) → 支气管炎',book:'anatomy',emoji:'😮‍💨'},
+  {id:37,word:'Ulcer',ipa:'/ˈʌlsər/',pos:'n.',zh:'溃疡',def:'Open sore on the skin or lining of the stomach',
+   sentence:'Stress and alcohol can worsen a stomach ulcer.',
+   zhSentence:'压力和酒精会加重胃溃疡。',mnemonic:'Ulcer → 溃烂的开放性伤口',book:'anatomy',emoji:'🔴'},
+  {id:38,word:'Tumor',ipa:'/ˈtjuːmər/',pos:'n.',zh:'肿瘤',def:'An abnormal lump or growth of cells in the body',
+   sentence:'The scan revealed a small tumor near the kidney.',
+   zhSentence:'扫描显示肾脏附近有一个小肿瘤。',mnemonic:'Tumor → tumere(拉丁:肿胀) → 异常增生',book:'clinic',emoji:'⚫'},
+  {id:39,word:'Inflammation',ipa:'/ˌɪnfləˈmeɪʃən/',pos:'n.',zh:'炎症',def:'Redness, swelling, and heat as the body fights injury',
+   sentence:'Anti-inflammatory drugs reduce swelling and inflammation.',
+   zhSentence:'抗炎药有助于减少肿胀和炎症。',mnemonic:'In-(内) + flame(火焰) → 体内"燃烧"',book:'anatomy',emoji:'🔥'},
+  {id:40,word:'Contagious',ipa:'/kənˈteɪdʒəs/',pos:'adj.',zh:'传染性的',def:'Easily spread from one person to another',
+   sentence:'Stay home if you have a contagious illness.',
+   zhSentence:'如果你患有传染性疾病，请待在家里。',mnemonic:'Con-(接触) + tagi-(触碰) → 通过接触传播',book:'clinic',emoji:'🦠'},
+  // ── MEDICAL PROCEDURES ──────────────────────────────────────────────────
+  {id:41,word:'Diagnose',ipa:'/ˈdaɪəɡnəʊz/',pos:'v.',zh:'诊断',def:'To identify a disease by examining the patient',
+   sentence:'The doctor diagnosed him with type 2 diabetes.',
+   zhSentence:'医生诊断他患有2型糖尿病。',mnemonic:'Dia-(通过) + gnose(知道) → 通过检查知道病因',book:'clinic',emoji:'🩺'},
+  {id:42,word:'Surgery',ipa:'/ˈsɜːdʒəri/',pos:'n.',zh:'手术',def:'Medical treatment that involves cutting into the body',
+   sentence:'He needs surgery to repair his damaged knee.',
+   zhSentence:'他需要手术来修复受损的膝盖。',mnemonic:'Surg-(手/工作) + -ery → 外科医生的工作',book:'clinic',emoji:'🏥'},
+  {id:43,word:'Biopsy',ipa:'/ˈbaɪɒpsi/',pos:'n.',zh:'活检',def:'Removal of a small tissue sample for laboratory testing',
+   sentence:'A biopsy confirmed the lump was benign.',
+   zhSentence:'活检证实肿块是良性的。',mnemonic:'Bio-(生命) + -opsy(观察) → 观察活体组织',book:'clinic',emoji:'🔬'},
+  {id:44,word:'Suture',ipa:'/ˈsuːtʃər/',pos:'n./v.',zh:'缝合',def:'A stitch or series of stitches to close a wound',
+   sentence:'The doctor used five sutures to close the cut.',
+   zhSentence:'医生用五针缝合了切口。',mnemonic:'Suture → sew(缝) → 缝合伤口',book:'clinic',emoji:'🧵'},
+  {id:45,word:'Injection',ipa:'/ɪnˈdʒekʃən/',pos:'n.',zh:'注射',def:'Medicine delivered into the body through a needle',
+   sentence:'The nurse gave him an injection in his upper arm.',
+   zhSentence:'护士在他的上臂给他注射了药物。',mnemonic:'In-(进入) + ject-(射入) → 将药物射入体内',book:'pharma',emoji:'💉'},
+  {id:46,word:'Vaccination',ipa:'/ˌvæksɪˈneɪʃən/',pos:'n.',zh:'疫苗接种',def:'An injection to protect against a specific disease',
+   sentence:'Annual flu vaccination is recommended for everyone.',
+   zhSentence:'建议每年接种流感疫苗。',mnemonic:'Vaccin-(牛痘/疫苗) + -ation → 疫苗接种',book:'pharma',emoji:'💉'},
+  {id:47,word:'Catheter',ipa:'/ˈkæθɪtər/',pos:'n.',zh:'导管',def:'A thin tube inserted into the body to drain fluid or deliver medicine',
+   sentence:'A urinary catheter was inserted after the operation.',
+   zhSentence:'手术后插入了尿管。',mnemonic:'Cath-(向下) + -eter → 引导液体的细管',book:'clinic',emoji:'🔩'},
+  {id:48,word:'Blood test',ipa:'/blʌd test/',pos:'n.',zh:'血液检查',def:'Laboratory analysis of a blood sample',
+   sentence:'Your doctor may order a blood test to check your health.',
+   zhSentence:'医生可能会要求做血液检查来评估您的健康状况。',mnemonic:'Blood(血) + test(检查) → 血液化验',book:'clinic',emoji:'🔬'},
+  // ── PHARMACY ─────────────────────────────────────────────────────────────
+  {id:49,word:'Prescription',ipa:'/prɪˈskrɪpʃən/',pos:'n.',zh:'处方',def:'A written order from a doctor for medicine',
+   sentence:'You need a prescription to buy this medication.',
+   zhSentence:'购买这种药物需要处方。',mnemonic:'Pre-(预先) + scription(写) → 预先写好的药方',book:'pharma',emoji:'📋'},
+  {id:50,word:'Dosage',ipa:'/ˈdəʊsɪdʒ/',pos:'n.',zh:'剂量',def:'The size and frequency of a medicine dose',
+   sentence:'Follow the prescribed dosage carefully to avoid side effects.',
+   zhSentence:'请仔细遵照规定剂量服药以避免副作用。',mnemonic:'Dose(一剂) + -age → 药量大小',book:'pharma',emoji:'⚖️'},
+  {id:51,word:'Antibiotic',ipa:'/ˌæntibaɪˈɒtɪk/',pos:'n.',zh:'抗生素',def:'Medicine that kills or stops bacterial infection',
+   sentence:'Always finish your full course of antibiotics.',
+   zhSentence:'请务必完成整个抗生素疗程。',mnemonic:'Anti-(对抗) + biotic(生命) → 对抗细菌的药',book:'pharma',emoji:'💊'},
+  {id:52,word:'Allergy',ipa:'/ˈælərdʒi/',pos:'n.',zh:'过敏',def:'Abnormal immune reaction to a substance',
+   sentence:'Always tell your doctor about any known allergies.',
+   zhSentence:'务必告诉医生您已知的过敏反应。',mnemonic:'Aller-(其他) + -gy → 对外来物质的异常反应',book:'pharma',emoji:'🤧'},
+  {id:53,word:'Painkiller',ipa:'/ˈpeɪnkɪlər/',pos:'n.',zh:'止痛药',def:'Medicine that reduces or removes pain',
+   sentence:'The doctor prescribed a painkiller for the post-surgery pain.',
+   zhSentence:'医生开了止痛药缓解术后疼痛。',mnemonic:'Pain(疼痛) + killer(消除) → 消除疼痛的药',book:'pharma',emoji:'💊'},
+  {id:54,word:'Inhaler',ipa:'/ɪnˈheɪlər/',pos:'n.',zh:'吸入器',def:'Device used to breathe medicine directly into the lungs',
+   sentence:'She uses her inhaler when having an asthma attack.',
+   zhSentence:'哮喘发作时她使用吸入器。',mnemonic:'Inhale(吸入) + -r → 用于吸入药物的装置',book:'pharma',emoji:'💨'},
+  {id:55,word:'Side effect',ipa:'/ˈsaɪd ɪˌfekt/',pos:'n.',zh:'副作用',def:'An unintended effect of a medicine',
+   sentence:'Drowsiness is a common side effect of this antihistamine.',
+   zhSentence:'嗜睡是这种抗组胺药的常见副作用。',mnemonic:'Side(旁边) + effect(效果) → 药物的附带效果',book:'pharma',emoji:'⚠️'},
+  {id:56,word:'Overdose',ipa:'/ˈəʊvədəʊs/',pos:'n.',zh:'过量服药',def:'Taking more medicine than is safe',
+   sentence:'Never exceed the recommended dose to avoid an overdose.',
+   zhSentence:'永远不要超过推荐剂量以避免过量服药。',mnemonic:'Over-(超过) + dose(剂量) → 剂量超出安全范围',book:'pharma',emoji:'⛔'},
+  {id:57,word:'Insulin',ipa:'/ˈɪnsjʊlɪn/',pos:'n.',zh:'胰岛素',def:'Hormone that controls blood sugar levels',
+   sentence:'Type 1 diabetics need daily insulin injections.',
+   zhSentence:'1型糖尿病患者需要每天注射胰岛素。',mnemonic:'Insul-(胰岛) + -in → 胰岛分泌的物质',book:'pharma',emoji:'💉'},
+  {id:58,word:'Antibody',ipa:'/ˈæntɪbɒdi/',pos:'n.',zh:'抗体',def:'Protein the body makes to fight a specific infection',
+   sentence:'Vaccines help the body produce protective antibodies.',
+   zhSentence:'疫苗帮助身体产生保护性抗体。',mnemonic:'Anti-(对抗) + body(身体物质) → 对抗病原体',book:'pharma',emoji:'🛡️'},
+  // ── CLINIC COMMUNICATION ────────────────────────────────────────────────
+  {id:59,word:'Symptom',ipa:'/ˈsɪmptəm/',pos:'n.',zh:'症状',def:'A sign of a disease felt or noticed by the patient',
+   sentence:'Fever is a common symptom of infection.',
+   zhSentence:'发烧是感染的常见症状。',mnemonic:'Sym-(共同) + ptom(落下) → 病症的显现',book:'clinic',emoji:'🌡️'},
+  {id:60,word:'Chronic',ipa:'/ˈkrɒnɪk/',pos:'adj.',zh:'慢性的',def:'Lasting for months or years',
+   sentence:'He has been managing chronic back pain for years.',
+   zhSentence:'他多年来一直在处理慢性背痛。',mnemonic:'Chron-(时间) + -ic → 持续长时间的',book:'clinic',emoji:'⏳'},
+  {id:61,word:'Acute',ipa:'/əˈkjuːt/',pos:'adj.',zh:'急性的',def:'Sudden, severe, and needing urgent attention',
+   sentence:'He was rushed to hospital with acute appendicitis.',
+   zhSentence:'他因急性阑尾炎被紧急送往医院。',mnemonic:'Acute → sharp → 突然发作且严重',book:'clinic',emoji:'⚡'},
+  {id:62,word:'Benign',ipa:'/bɪˈnaɪn/',pos:'adj.',zh:'良性的',def:'Not cancerous; not harmful',
+   sentence:'The biopsy showed the growth was benign, not cancer.',
+   zhSentence:'活检显示该增生是良性的，不是癌症。',mnemonic:'Beni-(好) + -gn → 对身体"友好"的',book:'clinic',emoji:'✅'},
+  {id:63,word:'Malignant',ipa:'/məˈlɪɡnənt/',pos:'adj.',zh:'恶性的',def:'Cancerous and likely to spread to other parts',
+   sentence:'The malignant tumor was removed during surgery.',
+   zhSentence:'恶性肿瘤在手术中被切除。',mnemonic:'Mali-(坏) + -gnant → 对身体有害的',book:'clinic',emoji:'⚠️'},
+  {id:64,word:'Discharge',ipa:'/ˈdɪstʃɑːdʒ/',pos:'n.',zh:'出院',def:'To be officially released from hospital',
+   sentence:'The patient was discharged after two days of observation.',
+   zhSentence:'患者观察两天后出院了。',mnemonic:'Dis-(离开) + charge(责任) → 解除医院的负责',book:'clinic',emoji:'🚪'},
+  {id:65,word:'Referral',ipa:'/rɪˈfɜːrəl/',pos:'n.',zh:'转诊',def:'A letter sending you to a specialist doctor',
+   sentence:'My doctor gave me a referral to see a cardiologist.',
+   zhSentence:'我的医生给了我一张转诊单去看心脏科医生。',mnemonic:'Refer(转介) + -ral → 转介给专科医生',book:'clinic',emoji:'📄'},
+  {id:66,word:'Follow-up',ipa:'/ˈfɒləʊ ʌp/',pos:'n.',zh:'复诊',def:'A later appointment to check on your recovery',
+   sentence:'Please schedule a follow-up visit in two weeks.',
+   zhSentence:'请安排两周后的复诊预约。',mnemonic:'Follow(跟进) + up → 跟进治疗情况',book:'clinic',emoji:'📅'},
+  {id:67,word:'Emergency',ipa:'/ɪˈmɜːdʒənsi/',pos:'n.',zh:'紧急情况',def:'A serious medical situation needing immediate action',
+   sentence:'Call an ambulance in a medical emergency.',
+   zhSentence:'遇到医疗紧急情况请拨打急救电话。',mnemonic:'Emerge(出现) + -ency → 突然出现的危险状况',book:'clinic',emoji:'🚨'},
+  {id:68,word:'Consent',ipa:'/kənˈsent/',pos:'n.',zh:'知情同意',def:'Your permission for a medical procedure',
+   sentence:'You must sign a consent form before the operation.',
+   zhSentence:'手术前您必须签署知情同意书。',mnemonic:'Con-(共同) + sent(意愿) → 共同同意',book:'clinic',emoji:'✍️'},
+];
+
+const BOOKS=[
+  {id:'anatomy',   title:'Human Anatomy',        zhTitle:'人体解剖学',count:412,color:'#7FD1AE',progress:.62},
+  {id:'cardiology',title:'Cardiology',            zhTitle:'心脏病学',  count:238,color:'#E8896B',progress:.24},
+  {id:'clinic',    title:'Clinic Communication', zhTitle:'诊所沟通',  count:120,color:'#E5B769',progress:.85},
+  {id:'pharma',    title:'Pharmacology 101',      zhTitle:'基础药理学',count:320,color:'#7BB0D6',progress:.10},
+];
+
+const REVIEW_ITEMS=[
+  {word:'Cardiac',     zh:'心脏的',stage:2,dueIn:'5 min', urgent:true},
+  {word:'Hypertension',zh:'高血压',stage:3,dueIn:'28 min',urgent:true},
+  {word:'Pulmonary',   zh:'肺部的',stage:4,dueIn:'1 h',   urgent:false},
+  {word:'Fracture',    zh:'骨折',  stage:5,dueIn:'7 h',   urgent:false},
+  {word:'Diagnose',    zh:'诊断',  stage:6,dueIn:'23 h',  urgent:false},
+  {word:'Prescription',zh:'处方',  stage:7,dueIn:'2 d',   urgent:false},
+];
+
+const BODY_PARTS={
+  head:   {label:'Head',   zh:'头部',emoji:'🧠',symptoms:['Throbbing headache','Dizziness','Blurred vision','Nausea','Sensitivity to light']},
+  throat: {label:'Throat', zh:'喉咙',emoji:'🗣️',symptoms:['Sore throat','Difficulty swallowing','Hoarseness','Dry cough']},
+  chest:  {label:'Chest',  zh:'胸部',emoji:'❤️',symptoms:['Sharp pain','Dull ache','Tightness','Burning sensation','Shortness of breath','Palpitations']},
+  abdomen:{label:'Abdomen',zh:'腹部',emoji:'🫃',symptoms:['Cramping','Bloating','Nausea','Loss of appetite','Diarrhea']},
+  back:   {label:'Back',   zh:'背部',emoji:'🔙',symptoms:['Lower back pain','Stiffness','Radiating pain','Muscle spasm']},
+  arm:    {label:'Arm',    zh:'手臂',emoji:'💪',symptoms:['Numbness','Tingling','Weakness','Joint pain']},
+  leg:    {label:'Leg',    zh:'腿部',emoji:'🦵',symptoms:['Swelling','Cramping','Numbness','Limited range of motion']},
+};
+
+const ZH_SYM={
+  'Sharp pain':'刺痛','Dull ache':'隐痛','Tightness':'发紧','Burning sensation':'灼热感',
+  'Shortness of breath':'呼吸困难','Palpitations':'心悸','Throbbing headache':'跳痛性头痛',
+  'Dizziness':'头晕','Blurred vision':'视力模糊','Nausea':'恶心','Sensitivity to light':'怕光',
+  'Sore throat':'喉咙痛','Difficulty swallowing':'吞咽困难','Hoarseness':'声音嘶哑','Dry cough':'干咳',
+  'Cramping':'痉挛','Bloating':'腹胀','Loss of appetite':'食欲不振','Diarrhea':'腹泻',
+  'Lower back pain':'腰痛','Stiffness':'僵硬','Radiating pain':'放射性疼痛','Muscle spasm':'肌肉痉挛',
+  'Numbness':'麻木','Tingling':'刺痛感','Weakness':'无力','Joint pain':'关节痛',
+  'Swelling':'肿胀','Limited range of motion':'活动范围受限',
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════════════════════ */
+const S={
+  screen:'login',
+  cardIdx:0, cardFlipped:false,
+  quizMode:'mc', quizIdx:0, quizPicked:null, quizSpelled:'',
+  quizOptions:null, quizCorrect:0, quizOptionsFor:-1, quizScore:120,
+  doctorPart:'chest', doctorSelected:new Set(), doctorDuration:'2 days',
+  accent:'mint', tweaksOpen:false,
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════════════════ */
+function go(sc){S.screen=sc;S.cardFlipped=false;render()}
+
+function applyAccent(key){
+  const c=ACCENT_COLORS[key];const r=document.documentElement.style;
+  r.setProperty('--accent',c.main);r.setProperty('--mint',c.main);
+  r.setProperty('--mint-600',c.d600);r.setProperty('--mint-700',c.d700);
+  r.setProperty('--mint-50',c.l50);r.setProperty('--mint-100',c.l100);
+  r.setProperty('--sh-mint',`0 8px 24px ${c.main}4D,0 2px 6px ${c.d600}33`);
+  S.accent=key;
+}
+
+function getQuizQ(){
+  const qi=S.quizIdx%VOCAB.length;
+  if(S.quizOptionsFor!==qi||!S.quizOptions){
+    const v=VOCAB[qi];
+    const wrong=VOCAB.filter(x=>x.id!==v.id).sort(()=>.5-Math.random()).slice(0,3).map(x=>x.def);
+    const opts=[v.def,...wrong].sort(()=>.5-Math.random());
+    S.quizOptions=opts;S.quizCorrect=opts.indexOf(v.def);S.quizOptionsFor=qi;
+  }
+  return {v:VOCAB[qi],opts:S.quizOptions,correct:S.quizCorrect};
+}
+
+function doctorSentence(){
+  if(!S.doctorSelected.size)return null;
+  const syms=Array.from(S.doctorSelected);
+  const pl=BODY_PARTS[S.doctorPart].label.toLowerCase();
+  const pzh=BODY_PARTS[S.doctorPart].zh;
+  const list=syms.length===1?syms[0]:syms.slice(0,-1).join(', ')+' and '+syms[syms.length-1];
+  return{
+    en:`I've been having ${list} in my ${pl} for ${S.doctorDuration}.`,
+    zh:`我在${pzh}有${syms.map(s=>ZH_SYM[s]||s).join('、')}，已经持续了${S.doctorDuration}。`
+  };
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SVG ICONS
+══════════════════════════════════════════════════════════════════════════ */
+function ic(name,size=20,color='currentColor',sw=1.8){
+  const a=`viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;display:block"`;
+  const p={
+    home:`<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>`,
+    book:`<path d="M4 4h10a4 4 0 014 4v12H8a4 4 0 01-4-4V4z"/><path d="M4 4v12a4 4 0 014-4h10"/>`,
+    clock:`<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>`,
+    target:`<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="${color}"/>`,
+    user:`<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>`,
+    steth:`<path d="M6 3v7a5 5 0 0010 0V3"/><path d="M6 3H4M16 3h-2M11 15v3a4 4 0 008 0v-1"/><circle cx="19" cy="14" r="2"/>`,
+    back:`<path d="M19 12H5M11 6l-6 6 6 6"/>`,
+    arrow:`<path d="M5 12h14M13 6l6 6-6 6"/>`,
+    shuffle:`<path d="M16 3h5v5M21 3l-7 7M4 20l7-7M16 21h5v-5M4 4l7 7"/>`,
+    speaker:`<path d="M11 4L6 9H3v6h3l5 5V4z"/><path d="M15 9a4 4 0 010 6M18 6a8 8 0 010 12"/>`,
+    close:`<path d="M6 6l12 12M18 6L6 18"/>`,
+    play:`<path d="M7 4v16l13-8L7 4z" fill="${color}" stroke="none"/>`,
+    zap:`<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="${color}" stroke="none"/>`,
+    chevron:`<path d="M9 6l6 6-6 6"/>`,
+    settings:`<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4.9a7 7 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7 7 0 00-1.7 1l-2.4-.9-2 3.4 2 1.6A7 7 0 005 12a7 7 0 00.1 1l-2 1.6 2 3.4 2.4-.9a7 7 0 001.7 1l.4 2.5h4l.4-2.5a7 7 0 001.7-1l2.4.9 2-3.4-2-1.6c0-.3.1-.6.1-1z"/>`,
+    edit:`<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/>`,
+    headphones:`<path d="M3 15v-3a9 9 0 0118 0v3"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/>`,
+    award:`<circle cx="12" cy="9" r="6"/><path d="M9 14l-2 7 5-2 5 2-2-7"/>`,
+    mail:`<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>`,
+  };
+  return`<svg ${a}>${p[name]||''}</svg>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   COMMON COMPONENTS
+══════════════════════════════════════════════════════════════════════════ */
+function sbar(dark=false){
+  const c=dark?'rgba(255,255,255,.9)':'var(--ink)';
+  return`<div class="sbar">
+    <span class="sbar-time" style="color:${c}">9:41</span>
+    <div class="sbar-icons">
+      <svg width="17" height="12" fill="none">${[0,1,2,3].map(i=>`<rect x="${i*4.5}" y="${12-(i+1)*3}" width="3.5" height="${(i+1)*3}" rx="1" fill="${c}"/>`).join('')}</svg>
+      <svg width="15" height="11" viewBox="0 0 24 18" fill="none" stroke="${c}" stroke-width="2.5" stroke-linecap="round"><path d="M1 5C5.5 1 18.5 1 23 5"/><path d="M4 9c2.3-2 13.7-2 16 0"/><path d="M7.5 13c1.3-1 7.7-1 9 0"/><circle cx="12" cy="16.5" r="1.5" fill="${c}" stroke="none"/></svg>
+      <svg width="25" height="12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="2.5" stroke="${c}" stroke-width="1.3"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="${c}"/><path d="M23 4v4" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+  </div>`;
+}
+
+function tabbar(active){
+  const tabs=[
+    {id:'home',  label:'Home',   icon:'home'},
+    {id:'learn', label:'Learn',  icon:'book'},
+    {id:'review',label:'Review', icon:'clock'},
+    {id:'quiz',  label:'Quiz',   icon:'target'},
+    {id:'me',    label:'Me',     icon:'user'},
+  ];
+  return`<div class="tabbar">${tabs.map(t=>{
+    const on=t.id===active;
+    return`<button class="tab-btn" data-go="${t.id}">
+      ${ic(t.icon,22,on?'var(--accent)':'var(--ink-4)',on?2.2:1.8)}
+      <span class="tab-label" style="color:${on?'var(--accent)':'var(--ink-4)'};font-weight:${on?700:500}">${t.label}</span>
+    </button>`;
+  }).join('')}</div>`;
+}
+
+function waveBtn(id=''){
+  return`<button class="btn" data-action="play${id}" style="background:var(--mint-50);border-radius:12px;padding:9px 16px;gap:8px">
+    <div class="wave-wrap">${[0,1,2,3].map(()=>`<div class="wave-bar"></div>`).join('')}</div>
+    <span style="font-size:14px;font-weight:600;color:var(--accent)">Play</span>
+  </button>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SCREENS
+══════════════════════════════════════════════════════════════════════════ */
+function loginScreen(){
+  return`<div class="screen" style="background:linear-gradient(180deg,#EAF7F0 0%,#F5EFE4 55%,#FBF8F1 100%)">
+    ${sbar()}
+    <div class="screen-scroll screen-pad" style="padding-top:4px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px">
+        <div style="width:44px;height:44px;border-radius:14px;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-mint)">${ic('steth',22,'#fff',2)}</div>
+        <span style="font-size:20px;font-weight:800;color:var(--ink)">MedPal</span>
+      </div>
+      <div style="margin-bottom:22px">
+        <h1 style="font-size:33px;font-weight:700;font-family:var(--serif);color:var(--ink);line-height:1.2;margin-bottom:10px">Talk to any doctor,<br>in English.</h1>
+        <p style="font-size:14px;color:var(--ink-3);line-height:1.7">在任何地方都能用英语看病<br><span style="font-size:13px;color:var(--ink-4)">Medical vocabulary for everyone · 68 words</span></p>
+      </div>
+      <div style="background:var(--paper);border-radius:20px;padding:18px 20px;box-shadow:var(--sh-2);margin-bottom:22px;position:relative;animation:mp-fadein .4s ease">
+        <div style="position:absolute;top:-11px;right:18px;background:var(--ink);color:#fff;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px">🔥 <span>23-day streak</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:30px;font-weight:700;font-family:var(--serif);color:var(--ink);line-height:1.1">Cardiac</div>
+            <div style="font-size:14px;color:var(--ink-3);font-family:var(--mono);margin-top:3px">/ˈkɑːdiæk/</div>
+            <div class="tag" style="margin-top:7px;background:var(--mint-50);color:var(--mint-700)">adj. · 心脏的</div>
+          </div>
+          ${waveBtn('-login')}
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--hair)">
+          <p style="font-size:13px;color:var(--ink-2);line-height:1.65">"The patient was admitted for cardiac monitoring overnight."</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <button class="btn btn-dark" data-go="home" style="width:100%;padding:15px;font-size:16px">${ic('mail',18,'#fff')} Continue with Apple</button>
+        <button class="btn btn-primary" data-go="home" style="width:100%;padding:15px;font-size:16px">Continue with Email</button>
+      </div>
+      <p style="text-align:center;font-size:11px;color:var(--ink-4);margin-top:14px">By continuing, you agree to our Terms &amp; Privacy Policy</p>
+    </div>
+  </div>`;
+}
+
+function homeScreen(){
+  return`<div class="screen" style="background:var(--beige)">
+    ${sbar()}
+    <div class="screen-scroll screen-pad">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <p style="font-size:13px;color:var(--ink-3)">Good morning · 早上好</p>
+          <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-top:2px">Lin Wei 👋</h2>
+        </div>
+        <div style="width:44px;height:44px;border-radius:22px;background:var(--mint-100);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--mint-700)">L</div>
+      </div>
+      <div style="background:var(--ink);border-radius:20px;padding:18px 20px;margin-bottom:22px;box-shadow:var(--sh-3)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,.65)">Today · 今日进度</span>
+          <div style="display:flex;align-items:center;gap:5px;background:rgba(127,209,174,.18);border-radius:10px;padding:4px 10px">
+            <span style="font-size:14px">🔥</span><span style="font-size:12px;font-weight:700;color:var(--mint)">23 days</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center">
+          ${[{v:'12',l:'New',zh:'新词',c:'var(--mint)'},{v:'34',l:'Review',zh:'复习',c:'var(--amber)'},{v:'18',l:'Min',zh:'分钟',c:'var(--sky)'}]
+            .map((s,i)=>`<div style="border-right:${i<2?'1px solid rgba(255,255,255,.1)':'none'};padding:0 6px">
+              <div style="font-size:28px;font-weight:700;color:${s.c}">${s.v}</div>
+              <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:1px">${s.l} · ${s.zh}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+        <h3 style="font-size:16px;font-weight:700;color:var(--ink)">Books · 课本</h3>
+        <button style="border:none;background:transparent;cursor:pointer;font-size:13px;color:var(--ink-3)">See all →</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px">
+        ${BOOKS.map(b=>`<button class="btn card" data-go="learn" style="padding:14px 16px;gap:14px;text-align:left;justify-content:flex-start">
+          <div style="width:48px;height:48px;border-radius:13px;background:${b.color}22;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ic('book',22,b.color)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px">${b.title}</div>
+            <div style="font-size:12px;color:var(--ink-3);margin-bottom:7px">${b.zhTitle} · ${b.count} words</div>
+            <div class="prog-wrap"><div class="prog-fill" style="width:${b.progress*100}%;background:${b.color}"></div></div>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:${b.color};flex-shrink:0">${Math.round(b.progress*100)}%</div>
+        </button>`).join('')}
+      </div>
+      <button class="btn card" data-go="doctor" style="width:100%;margin-top:14px;padding:14px 16px;gap:12px;text-align:left;justify-content:flex-start">
+        <div style="width:44px;height:44px;border-radius:13px;background:var(--mint-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">${ic('steth',22,'var(--accent)')}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;color:var(--ink)">Talk to my doctor</div>
+          <div style="font-size:12px;color:var(--ink-3)">看诊助手 · Symptom builder</div>
+        </div>
+        ${ic('chevron',18,'var(--ink-4)')}
+      </button>
+    </div>
+    ${tabbar('home')}
+  </div>`;
+}
+
+function learnScreen(){
+  const v=VOCAB[S.cardIdx];
+  const total=VOCAB.length;
+  const pct=((S.cardIdx+1)/total*100).toFixed(1);
+  return`<div class="screen" style="background:var(--beige)">
+    ${sbar()}
+    <div style="padding:0 20px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+      <button class="btn-icon btn" data-go="home">${ic('back',18,'var(--ink)')}</button>
+      <div style="flex:1;text-align:center">
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">Medical Vocabulary · 医学词汇</div>
+        <div style="font-size:11px;color:var(--ink-3)">${BOOKS.find(b=>b.id===v.book)?.title||'All Books'}</div>
+      </div>
+      <button class="btn-icon btn" data-action="shuffle">${ic('shuffle',17,'var(--ink-3)')}</button>
+    </div>
+    <div style="padding:0 20px 12px;flex-shrink:0">
+      <div class="prog-wrap" style="margin-bottom:5px"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:flex-end"><span style="font-size:12px;font-weight:600;color:var(--ink-3)">${S.cardIdx+1} / ${total}</span></div>
+    </div>
+    <div style="flex:1;padding:0 20px;display:flex;flex-direction:column;justify-content:center;overflow:hidden">
+      <div class="flip-card">
+        <div class="flip-inner" id="flip-inner">
+          <div class="flip-face" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px">
+            <div style="width:72px;height:72px;border-radius:36px;background:var(--mint-50);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px">${v.emoji}</div>
+            <div style="font-size:38px;font-weight:700;font-family:var(--serif);color:var(--ink);text-align:center;margin-bottom:6px">${v.word}</div>
+            <div style="font-size:15px;color:var(--ink-3);font-family:var(--mono);margin-bottom:16px">${v.ipa}</div>
+            ${waveBtn('-card')}
+            <p style="font-size:11px;color:var(--ink-4);margin-top:14px">Tap to flip · 点击翻转</p>
+          </div>
+          <div class="flip-face flip-back" style="padding:18px 20px;overflow-y:auto">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+              <div>
+                <div style="font-size:22px;font-weight:700;font-family:var(--serif);color:var(--ink)">${v.word}</div>
+                <div style="font-size:12px;color:var(--ink-3);font-family:var(--mono)">${v.ipa} · ${v.pos}</div>
+              </div>
+              <div class="tag" style="background:var(--mint-50);color:var(--mint-700)">${v.zh}</div>
+            </div>
+            <div style="background:var(--beige);border-radius:12px;padding:11px 13px;margin-bottom:11px">
+              <p style="font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:5px">"${v.sentence}"</p>
+              <p style="font-size:12px;color:var(--ink-3);line-height:1.65">${v.zhSentence}</p>
+            </div>
+            <div style="margin-bottom:11px">
+              <div style="font-size:10px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Definition · 释义</div>
+              <p style="font-size:14px;color:var(--ink-2);line-height:1.6">${v.def}</p>
+            </div>
+            <div style="background:var(--mint-50);border-radius:10px;padding:10px 12px">
+              <div style="font-size:11px;font-weight:700;color:var(--mint-700);margin-bottom:4px">💡 Mnemonic · 记忆法</div>
+              <p style="font-size:13px;color:var(--mint-700)">${v.mnemonic}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+        <button class="btn btn-ghost" data-action="prev-card" ${S.cardIdx===0?'disabled':''} style="width:50px;height:50px;border-radius:15px;opacity:${S.cardIdx===0?.4:1}">${ic('back',20,'var(--ink)')}</button>
+        <button class="btn btn-primary" data-action="know" style="padding:12px 22px;font-size:14px">Know it · 认识了 ✓</button>
+        <button class="btn btn-ghost" data-action="next-card" ${S.cardIdx===VOCAB.length-1?'disabled':''} style="width:50px;height:50px;border-radius:15px;opacity:${S.cardIdx===VOCAB.length-1?.4:1}">${ic('arrow',20,'var(--ink)')}</button>
+      </div>
+    </div>
+    <div style="height:14px;flex-shrink:0"></div>
+    ${tabbar('learn')}
+  </div>`;
+}
+
+function reviewScreen(){
+  const stages=['5m','30m','1h','8h','24h','2d','4d','7d'];
+  const ys=[5,8,14,30,48,60,68,73];
+  const W=280,H=80;
+  let path=`M0,${ys[0]}`;
+  for(let i=1;i<ys.length;i++){const x=i*(W/7);path+=` Q${x-W/14},${ys[i-1]} ${x},${ys[i]}`;}
+  return`<div class="screen" style="background:var(--beige)">
+    ${sbar()}
+    <div class="screen-scroll screen-pad">
+      <div style="margin-bottom:18px">
+        <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:3px">Review · 复习</h2>
+        <p style="font-size:13px;color:var(--ink-3)">Ebbinghaus forgetting curve · 艾宾浩斯遗忘曲线</p>
+      </div>
+      <div class="card" style="padding:16px;margin-bottom:18px">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">Memory retention · 记忆保留率</div>
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;overflow:visible">
+          <defs><linearGradient id="cg" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="var(--accent)" stop-opacity=".25"/>
+            <stop offset="100%" stop-color="var(--accent)" stop-opacity=".03"/>
+          </linearGradient></defs>
+          <path d="${path} L${W},${H} L0,${H} Z" fill="url(#cg)"/>
+          <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          ${ys.map((y,i)=>`<circle cx="${i*(W/7)}" cy="${y}" r="3.5" fill="var(--accent)"/>`).join('')}
+        </svg>
+        <div style="display:flex;justify-content:space-between;margin-top:5px">
+          ${stages.map(s=>`<span style="font-size:9px;color:var(--ink-4);font-family:var(--mono)">${s}</span>`).join('')}
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:14px;font-weight:700;color:var(--ink)">Due now · 待复习</span>
+        <span style="font-size:12px;color:var(--ink-3)">${REVIEW_ITEMS.length} words</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${REVIEW_ITEMS.map((it,i)=>`<div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;background:${it.urgent?'var(--mint-50)':'var(--beige)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${it.urgent?'var(--mint-700)':'var(--ink-4)'}">${it.stage}</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--ink)">${it.word}</div><div style="font-size:12px;color:var(--ink-3)">${it.zh}</div></div>
+          <div style="font-size:12px;font-weight:600;color:${it.urgent?'var(--accent)':'var(--ink-4)'};margin-right:4px">${it.dueIn}</div>
+          <button class="btn" style="padding:6px 12px;border-radius:9px;background:${it.urgent?'var(--accent)':'var(--hair)'};color:${it.urgent?'#fff':'var(--ink-3)'};font-size:12px;font-weight:600;flex-shrink:0">${it.urgent?'Review':'Later'}</button>
+        </div>`).join('')}
+      </div>
+    </div>
+    ${tabbar('review')}
+  </div>`;
+}
+
+function quizScreen(){
+  const {v,opts,correct}=getQuizQ();
+  const modes=[{id:'mc',l:'Multiple Choice',icon:'target'},{id:'spell',l:'Spelling',icon:'edit'},{id:'listen',l:'Listening',icon:'headphones'}];
+  let content='';
+  if(S.quizMode==='spell'){
+    const ok=S.quizSpelled.toLowerCase()===v.word.toLowerCase()&&S.quizSpelled.length>0;
+    content=`<div>
+      <input id="spell-input" placeholder="Type the word · 请输入单词..." value="${S.quizSpelled.replace(/"/g,'&quot;')}"
+        style="width:100%;padding:14px 16px;border-radius:14px;border:${S.quizSpelled?(ok?'2px solid var(--accent)':'2px solid var(--coral)'):'1.5px solid var(--hair)'};font-size:16px">
+      <div id="spell-feedback" style="margin-top:10px;min-height:36px">
+        ${S.quizSpelled?`<div style="padding:10px 14px;border-radius:12px;background:${ok?'var(--mint-50)':'#FBEEE8'};font-size:13px;font-weight:600;color:${ok?'var(--mint-700)':'#B15233'}">${ok?'✓ Correct! · 正确！':'✗ Keep trying · 继续尝试'}</div>`:''}
+      </div>
+      ${ok?`<button class="btn btn-primary" data-action="next-quiz" style="width:100%;padding:14px;font-size:15px;margin-top:4px;animation:mp-fadein .2s">Next word · 下一个 →</button>`:''}
+    </div>`;
+  }else{
+    content=`<div style="display:flex;flex-direction:column;gap:10px">
+      ${opts.map((opt,i)=>{
+        const picked=S.quizPicked===i,isRight=i===correct,shown=S.quizPicked!==null;
+        let bg='var(--paper)',tc='var(--ink)',bc='var(--hair)';
+        if(shown){if(isRight){bg='var(--mint-50)';tc='var(--mint-700)';bc='var(--accent)'}else if(picked){bg='#FBEEE8';tc='#B15233';bc='var(--coral)'}}
+        const badge=shown&&isRight?'✓':shown&&picked&&!isRight?'✗':'ABCD'[i];
+        const badgeBg=shown&&isRight?'var(--accent)':shown&&picked?'var(--coral)':'var(--beige)';
+        const badgeC=shown?'#fff':'var(--ink-3)';
+        return`<button class="btn" data-quiz-opt="${i}" style="width:100%;padding:13px 14px;border-radius:14px;background:${bg};color:${tc};border:2px solid ${shown?bc:'var(--hair)'};font-size:13px;font-weight:500;text-align:left;gap:10px;justify-content:flex-start;${S.quizPicked!==null?'cursor:default':''}">
+          <span style="width:26px;height:26px;border-radius:8px;flex-shrink:0;background:${badgeBg};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${badgeC}">${badge}</span>
+          ${opt}
+        </button>`;
+      }).join('')}
+      ${S.quizPicked!==null?`<button class="btn btn-primary" data-action="next-quiz" style="width:100%;padding:14px;font-size:15px;margin-top:2px;animation:mp-fadein .2s">Next word · 下一个 →</button>`:''}
+    </div>`;
+  }
+  return`<div class="screen" style="background:var(--beige)">
+    ${sbar()}
+    <div class="screen-scroll screen-pad">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+        <div>
+          <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:2px">Quiz · 测验</h2>
+          <p style="font-size:13px;color:var(--ink-3)">Word ${(S.quizIdx%VOCAB.length)+1} of ${VOCAB.length}</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;background:var(--mint-50);border-radius:10px;padding:6px 10px">
+          ${ic('zap',14,'var(--mint-700)')} <span style="font-size:13px;font-weight:700;color:var(--mint-700)">+${S.quizScore} XP</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;background:var(--paper);border-radius:14px;padding:4px;box-shadow:var(--sh-1);margin-bottom:16px">
+        ${modes.map(m=>`<button class="btn" data-quiz-mode="${m.id}" style="padding:8px 4px;border-radius:10px;background:${S.quizMode===m.id?'var(--accent)':'transparent'};color:${S.quizMode===m.id?'#fff':'var(--ink-3)'};font-size:11px;font-weight:600;flex-direction:column;gap:3px">
+          ${ic(m.icon,16,S.quizMode===m.id?'#fff':'var(--ink-3)')}${m.l}
+        </button>`).join('')}
+      </div>
+      <div class="card card-lg" style="padding:20px;margin-bottom:14px;animation:mp-fadein .3s ease">
+        ${S.quizMode==='listen'
+          ?`<div style="text-align:center;padding:10px 0">
+              <p style="font-size:13px;color:var(--ink-3);margin-bottom:16px">Listen and identify · 听音识词</p>
+              <button class="btn" style="width:68px;height:68px;border-radius:22px;background:var(--mint-50);box-shadow:var(--sh-mint);margin:0 auto">${ic('play',30,'var(--accent)')}</button>
+              <p style="font-size:11px;color:var(--ink-4);margin-top:10px">${v.ipa}</p>
+            </div>`
+          :`<p style="font-size:13px;color:var(--ink-3);margin-bottom:8px">${S.quizMode==='mc'?'What does this word mean? · 这个词是什么意思？':'How do you spell this word? · 请拼写这个词'}</p>
+           <div style="font-size:36px;font-weight:700;font-family:var(--serif);color:var(--ink);margin-bottom:4px">${v.word}</div>
+           <div style="font-size:14px;color:var(--ink-3);font-family:var(--mono)">${v.ipa} · ${v.pos}</div>`}
+      </div>
+      ${content}
+    </div>
+    ${tabbar('quiz')}
+  </div>`;
+}
+
+function profileScreen(){
+  const wk=[22,35,18,42,28,30,45],days=['M','T','W','T','F','S','S'],mx=Math.max(...wk);
+  return`<div class="screen" style="background:var(--beige)">
+    ${sbar()}
+    <div class="screen-scroll screen-pad">
+      <div style="background:var(--ink);border-radius:20px;padding:20px;box-shadow:var(--sh-3);margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+          <div style="width:58px;height:58px;border-radius:18px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0">L</div>
+          <div style="flex:1"><div style="font-size:17px;font-weight:700;color:#fff">Lin Wei · 林伟</div><div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:2px">Learning English for travel</div></div>
+          <button class="btn" style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.1)">${ic('settings',17,'rgba(255,255,255,.65)')}</button>
+        </div>
+        <div style="display:flex;gap:7px">
+          ${['LEVEL 12','B1 · Intermediate'].map(b=>`<div class="tag" style="background:rgba(127,209,174,.18);color:var(--mint)">${b}</div>`).join('')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+        ${[{l:'Mastered',zh:'已掌握',v:'1,284',c:'var(--mint-600)'},{l:'Learning',zh:'学习中',v:'342',c:'var(--amber)'},{l:'Hours',zh:'学习时',v:'41',c:'var(--sky)'}]
+          .map(s=>`<div class="card" style="padding:14px 8px;text-align:center">
+            <div style="font-size:24px;font-weight:700;color:${s.c}">${s.v}</div>
+            <div style="font-size:11px;color:var(--ink-3);margin-top:2px">${s.l}</div>
+            <div style="font-size:10px;color:var(--ink-4)">${s.zh}</div>
+          </div>`).join('')}
+      </div>
+      <div class="card" style="padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:14px">This week · 本周学习</div>
+        <div style="display:flex;align-items:flex-end;gap:7px;height:72px">
+          ${wk.map((v,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px">
+            <div style="width:100%;border-radius:5px 5px 0 0;background:${i===6?'var(--accent)':'var(--mint-100)'};height:${(v/mx*60).toFixed(0)}px"></div>
+            <span style="font-size:9px;color:${i===6?'var(--accent)':'var(--ink-4)'};font-weight:${i===6?700:400}">${days[i]}</span>
+          </div>`).join('')}
+        </div>
+        <div style="margin-top:8px;display:flex;justify-content:space-between">
+          <span style="font-size:12px;color:var(--ink-3)">Avg 31 min/day</span>
+          <span style="font-size:12px;color:var(--ink-3)">平均每天31分钟</span>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700;color:var(--ink)">Accuracy · 正确率</span>
+          <span style="font-size:14px;font-weight:700;color:var(--accent)">87%</span>
+        </div>
+        <div class="prog-wrap" style="height:6px"><div class="prog-fill" style="width:87%;height:100%"></div></div>
+      </div>
+      <div class="card" style="padding:14px 16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px">Vocabulary · 词汇</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${BOOKS.map(b=>`<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:${b.color}18">
+            <div style="width:8px;height:8px;border-radius:2px;background:${b.color}"></div>
+            <span style="font-size:12px;font-weight:600;color:var(--ink-2)">${b.title}</span>
+            <span style="font-size:11px;color:var(--ink-4)">${b.count}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+      <button class="btn card" data-go="doctor" style="width:100%;padding:14px 16px;gap:12px;text-align:left;justify-content:flex-start">
+        <div style="width:44px;height:44px;border-radius:13px;background:var(--mint-50);display:flex;align-items:center;justify-content:center;flex-shrink:0">${ic('steth',22,'var(--accent)')}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--ink)">Talk to my doctor</div><div style="font-size:12px;color:var(--ink-3)">看诊助手 · Symptom builder</div></div>
+        ${ic('chevron',18,'var(--ink-4)')}
+      </button>
+    </div>
+    ${tabbar('me')}
+  </div>`;
+}
+
+function doctorScreen(){
+  const parts=Object.keys(BODY_PARTS);
+  const bp=BODY_PARTS[S.doctorPart];
+  const sent=doctorSentence();
+  return`<div class="screen" style="background:var(--beige)">
+    ${sbar()}
+    <div style="padding:0 20px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+      <button class="btn-icon btn" data-go="home">${ic('back',18,'var(--ink)')}</button>
+      <div><div style="font-size:16px;font-weight:700;color:var(--ink)">Talk to my doctor</div><div style="font-size:12px;color:var(--ink-3)">看诊助手 · Symptom builder</div></div>
+    </div>
+    <div class="screen-scroll screen-pad" style="padding-top:0">
+      <div class="card" style="padding:14px;margin-bottom:12px">
+        <div class="sec-label">Step 1 · Where does it hurt? · 哪里不舒服？</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          ${parts.map(p=>`<button class="chip-btn" data-part="${p}" style="background:${S.doctorPart===p?'var(--accent)':'var(--beige)'};color:${S.doctorPart===p?'#fff':'var(--ink-2)'};display:flex;align-items:center;gap:5px">
+            <span>${BODY_PARTS[p].emoji}</span><span>${BODY_PARTS[p].label}</span><span style="font-size:11px;opacity:.75">·</span><span style="font-size:12px">${BODY_PARTS[p].zh}</span>
+          </button>`).join('')}
+        </div>
+      </div>
+      <div class="card" style="padding:14px;margin-bottom:12px">
+        <div class="sec-label">Step 2 · Describe symptoms · 描述症状</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          ${bp.symptoms.map(s=>{
+            const on=S.doctorSelected.has(s);
+            return`<button class="chip-btn" data-symptom="${s.replace(/"/g,'&quot;')}" style="border:1.5px solid ${on?'var(--accent)':'var(--hair)'};background:${on?'var(--mint-50)':'transparent'};color:${on?'var(--mint-700)':'var(--ink-2)'};font-weight:${on?600:400}">
+              ${on?'✓ ':''}<span>${s}</span>${ZH_SYM[s]?`<span style="font-size:11px;opacity:.7"> · ${ZH_SYM[s]}</span>`:''}
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="card" style="padding:14px;margin-bottom:14px">
+        <div class="sec-label">Step 3 · How long? · 持续多久了？</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          ${['1 day','2 days','3 days','1 week','2 weeks','1 month'].map(d=>`<button class="chip-btn" data-dur="${d}" style="background:${S.doctorDuration===d?'var(--accent)':'var(--beige)'};color:${S.doctorDuration===d?'#fff':'var(--ink-2)'}">${d}</button>`).join('')}
+        </div>
+      </div>
+      ${sent
+        ?`<div style="background:linear-gradient(135deg,var(--mint-50),#f0faf5);border-radius:16px;padding:16px;border:1.5px solid var(--mint-100);animation:mp-fadein .3s ease">
+            <div style="font-size:12px;font-weight:700;color:var(--mint-700);margin-bottom:10px">💬 Say to your doctor · 对医生说</div>
+            <p style="font-size:15px;font-weight:500;color:var(--ink);line-height:1.65;margin-bottom:12px">"${sent.en}"</p>
+            <div style="height:1px;background:var(--mint-100);margin-bottom:10px"></div>
+            <p style="font-size:13px;color:var(--ink-3);line-height:1.65">${sent.zh}</p>
+          </div>`
+        :`<div style="text-align:center;padding:24px 20px;color:var(--ink-4);font-size:13px">
+            Select symptoms above to generate your sentence<br><span style="font-size:12px">请选择症状以生成句子</span>
+          </div>`}
+    </div>
+  </div>`;
+}
+
+function navPill(){
+  const screens=['login','home','learn','review','quiz','me','doctor'];
+  return`<div class="nav-pill">${screens.map(s=>`<button class="nav-btn" data-go="${s}" style="background:${S.screen===s?'var(--accent)':'transparent'};color:${S.screen===s?'#fff':'var(--ink-3)'}">${s}</button>`).join('')}</div>`;
+}
+
+function tweaksPanel(){
+  const labels={mint:'Mint 薄荷',coral:'Coral 珊瑚',lavender:'Lavender 薰衣草',slate:'Slate 石板'};
+  return`<button class="tweaks-btn" data-action="toggle-tweaks">${ic('settings',20,'var(--ink-3)')}</button>
+  ${S.tweaksOpen?`<div class="tweaks-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:13px;font-weight:700;color:var(--ink)">Tweaks · 设置</span>
+      <button class="btn" data-action="toggle-tweaks" style="padding:2px">${ic('close',16,'var(--ink-3)')}</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Accent Color · 主题色</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      ${Object.entries(ACCENT_COLORS).map(([k,c])=>`<button class="btn" data-accent="${k}" style="padding:8px 10px;border-radius:11px;background:${S.accent===k?c.main+'22':'var(--beige)'};outline:2px solid ${S.accent===k?c.main:'transparent'};gap:7px">
+        <div style="width:18px;height:18px;border-radius:6px;background:${c.main};flex-shrink:0"></div>
+        <span style="font-size:11px;font-weight:600;color:${S.accent===k?c.d700:'var(--ink-3)'}">${labels[k]}</span>
+      </button>`).join('')}
+    </div>
+  </div>`:''}`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════════════════════════════════ */
+const screens={login:loginScreen,home:homeScreen,learn:learnScreen,
+  review:reviewScreen,quiz:quizScreen,me:profileScreen,doctor:doctorScreen};
+
+function render(){
+  const fn=screens[S.screen]||homeScreen;
+  document.getElementById('app').innerHTML=`
+    ${navPill()}
+    <div class="stage">
+      <div class="phone-shell">
+        <div class="phone-island"></div>
+        <div class="phone-homebar"></div>
+        <div class="phone-inner">${fn()}</div>
+      </div>
+      <p class="caption">MedPal · ${VOCAB.length} Medical Words · EN+中文</p>
+    </div>
+    ${tweaksPanel()}`;
+  bind();
+  // Restore flip state
+  if(S.screen==='learn'&&S.cardFlipped){
+    const fi=document.getElementById('flip-inner');
+    if(fi)fi.classList.add('flipped');
+  }
+  // Restore spell input focus + value
+  if(S.screen==='quiz'&&S.quizMode==='spell'){
+    const inp=document.getElementById('spell-input');
+    if(inp){inp.value=S.quizSpelled;inp.focus();}
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EVENTS
+══════════════════════════════════════════════════════════════════════════ */
+function bind(){
+  // Navigation: data-go
+  document.querySelectorAll('[data-go]').forEach(el=>{
+    el.addEventListener('click',e=>{e.stopPropagation();go(el.dataset.go);});
+  });
+
+  // Flip card
+  const fc=document.querySelector('.flip-card');
+  if(fc){
+    let _ft=false;
+    const doFlip=()=>{S.cardFlipped=!S.cardFlipped;const fi=document.getElementById('flip-inner');if(fi)fi.classList.toggle('flipped',S.cardFlipped);};
+    fc.addEventListener('touchstart',e=>{if(e.target.closest('[data-action]'))return;_ft=true;doFlip();},{passive:true});
+    fc.addEventListener('click',e=>{if(e.target.closest('[data-action]'))return;if(_ft){_ft=false;return;}doFlip();});
+  }
+
+  // Prev / Next card
+  document.querySelector('[data-action="prev-card"]')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(S.cardIdx>0){S.cardIdx--;S.cardFlipped=false;render();}
+  });
+  document.querySelector('[data-action="next-card"]')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(S.cardIdx<VOCAB.length-1){S.cardIdx++;S.cardFlipped=false;render();}
+  });
+  document.querySelector('[data-action="know"]')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(S.cardIdx<VOCAB.length-1){S.cardIdx++;S.cardFlipped=false;render();}
+  });
+
+  // Play wave + speech
+  ['','-login','-card'].forEach(sfx=>{
+    document.querySelector(`[data-action="play${sfx}"]`)?.addEventListener('click',e=>{
+      e.stopPropagation();
+      const bars=e.currentTarget.querySelectorAll('.wave-bar');
+      bars.forEach(b=>b.classList.add('active'));
+      if(window.speechSynthesis && sfx==='-card'){
+        const word=VOCAB[S.cardIdx]?.word||'';
+        window.speechSynthesis.cancel();
+        const utt=new SpeechSynthesisUtterance(word);
+        utt.lang='en-US';utt.rate=0.85;
+        utt.onend=()=>bars.forEach(b=>b.classList.remove('active'));
+        window.speechSynthesis.speak(utt);
+      } else {
+        setTimeout(()=>bars.forEach(b=>b.classList.remove('active')),2000);
+      }
+    });
+  });
+
+  // Shuffle
+  document.querySelector('[data-action="shuffle"]')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    S.cardIdx=Math.floor(Math.random()*VOCAB.length);
+    S.cardFlipped=false;render();
+  });
+
+  // Quiz mode
+  document.querySelectorAll('[data-quiz-mode]').forEach(el=>{
+    el.addEventListener('click',()=>{S.quizMode=el.dataset.quizMode;S.quizPicked=null;S.quizSpelled='';render();});
+  });
+
+  // Quiz MC options
+  document.querySelectorAll('[data-quiz-opt]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(S.quizPicked===null){S.quizPicked=parseInt(el.dataset.quizOpt);render();}
+    });
+  });
+
+  // Next quiz
+  document.querySelector('[data-action="next-quiz"]')?.addEventListener('click',()=>{
+    S.quizIdx++;S.quizPicked=null;S.quizSpelled='';S.quizOptions=null;S.quizScore+=10;render();
+  });
+
+  // Spell input — live, no re-render
+  document.getElementById('spell-input')?.addEventListener('input',e=>{
+    S.quizSpelled=e.target.value;
+    const ok=S.quizSpelled.toLowerCase()===VOCAB[S.quizIdx%VOCAB.length].word.toLowerCase()&&S.quizSpelled.length>0;
+    const fb=document.getElementById('spell-feedback');
+    if(fb)fb.innerHTML=S.quizSpelled
+      ?`<div style="padding:10px 14px;border-radius:12px;background:${ok?'var(--mint-50)':'#FBEEE8'};font-size:13px;font-weight:600;color:${ok?'var(--mint-700)':'#B15233'}">${ok?'✓ Correct! · 正确！':'✗ Keep trying · 继续尝试'}</div>`:'';
+    // Show next button when correct
+    if(ok){
+      let nb=document.querySelector('[data-action="next-quiz"]');
+      if(!nb){
+        nb=document.createElement('button');
+        nb.className='btn btn-primary';
+        nb.dataset.action='next-quiz';
+        nb.style.cssText='width:100%;padding:14px;font-size:15px;margin-top:8px;animation:mp-fadein .2s;border:none;cursor:pointer;font-family:inherit';
+        nb.textContent='Next word · 下一个 →';
+        fb.parentNode.appendChild(nb);
+        nb.addEventListener('click',()=>{S.quizIdx++;S.quizPicked=null;S.quizSpelled='';S.quizOptions=null;S.quizScore+=10;render();});
+      }
+    }
+  });
+
+  // Doctor: body part
+  document.querySelectorAll('[data-part]').forEach(el=>{
+    el.addEventListener('click',()=>{S.doctorPart=el.dataset.part;S.doctorSelected=new Set();render();});
+  });
+
+  // Doctor: symptom
+  document.querySelectorAll('[data-symptom]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const s=el.dataset.symptom;
+      S.doctorSelected.has(s)?S.doctorSelected.delete(s):S.doctorSelected.add(s);
+      render();
+    });
+  });
+
+  // Doctor: duration
+  document.querySelectorAll('[data-dur]').forEach(el=>{
+    el.addEventListener('click',()=>{S.doctorDuration=el.dataset.dur;render();});
+  });
+
+  // Tweaks toggle
+  document.querySelector('[data-action="toggle-tweaks"]')?.addEventListener('click',()=>{
+    S.tweaksOpen=!S.tweaksOpen;render();
+  });
+
+  // Accent swatches
+  document.querySelectorAll('[data-accent]').forEach(el=>{
+    el.addEventListener('click',()=>{applyAccent(el.dataset.accent);render();});
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════════════════ */
+render();
+</script>
+</body>
+</html>

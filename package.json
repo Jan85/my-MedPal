@@ -1,0 +1,8 @@
+{
+  "name": "medpal",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npx serve . --listen 5173",
+    "start": "npx serve ."
+  }
+}
