@@ -4,14 +4,14 @@
 
 # The first version run:
 
-cd C:\Users\JoeZ\Documents\ClaudeCode\my-MedPal
+cd C:\Users\xxxx\Documents\ClaudeCode\my-MedPal
 >> npm run dev
    ┌───────────────────────────────────────────┐
 	 │                                           │
 	 │   Serving!                                │
 	 │                                           │
 	 │   - Local:    http://localhost:5173       │
-	 │   - Network:  http://172.16.58.145:5173   │
+	 │   - Network:  http://172.xx.xx.xx:5173   │
 	 │                                           │
 	 │   Copied local address to clipboard!      │
 	 │                                           │
@@ -24,4 +24,4 @@ cd C:\Users\JoeZ\Documents\ClaudeCode\my-MedPal
 	 HTTP  4/22/2026 12:22:03 PM 172.16.58.102 Returned 404 in 3 ms	
 	 
 >> Then on iPhone (USB hotspot): http://<PC-IP>:5173/MedPal.html
-		where <PC-IP> = http://172.16.58.145
+		where <PC-IP> = http://172.xx.xx.xx
