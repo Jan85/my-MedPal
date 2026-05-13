@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>MedPal</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -21,8 +21,7 @@
   --mono:"SF Mono",ui-monospace,Menlo,monospace;
 }
 html,body{height:100%;-webkit-font-smoothing:antialiased}
-body{background:radial-gradient(1200px 800px at 50% 40%,#F3EEE1,#E0DBCB 70%);
-  min-height:100vh;font-family:var(--sans)}
+body{background:var(--beige);min-height:100vh;font-family:var(--sans)}
 @keyframes mp-wave{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
 @keyframes mp-fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes mp-spin{to{transform:rotate(360deg)}}
@@ -30,42 +29,30 @@ body{background:radial-gradient(1200px 800px at 50% 40%,#F3EEE1,#E0DBCB 70%);
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--hair);border-radius:3px}
 
-.stage{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;padding:68px 20px 32px}
-.phone-shell{width:390px;height:844px;border-radius:56px;background:#1A2320;padding:10px;
-  box-shadow:0 50px 100px rgba(27,36,32,.26),0 20px 40px rgba(27,36,32,.16),
-    inset 0 0 0 1px rgba(255,255,255,.05),inset 0 2px 4px rgba(255,255,255,.08);
-  position:relative;flex-shrink:0}
-.phone-island{position:absolute;top:24px;left:50%;transform:translateX(-50%);
-  width:122px;height:34px;border-radius:20px;background:#000;z-index:200;pointer-events:none}
-.phone-homebar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
-  width:134px;height:5px;border-radius:100px;background:rgba(255,255,255,.28);
-  z-index:200;pointer-events:none}
-.phone-inner{width:100%;height:100%;border-radius:46px;overflow:hidden;
-  position:relative;background:#FBF8F1}
-.caption{margin-top:12px;font-size:11px;color:#9BA7A2;
-  font-family:var(--mono);letter-spacing:.5px;text-align:center}
+#app{height:100%;height:100dvh}
 
 /* Screen layout */
-.screen{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.screen{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
 .screen-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .screen-pad{padding:0 20px 20px}
 
 /* Status bar */
-.sbar{height:50px;display:flex;align-items:flex-end;padding-bottom:10px;
+.sbar{height:calc(env(safe-area-inset-top,0px) + 50px);padding-top:env(safe-area-inset-top,0px);
+  display:flex;align-items:flex-end;padding-bottom:10px;
   padding-left:24px;padding-right:20px;flex-shrink:0}
 .sbar-time{font-size:15px;font-weight:700}
 .sbar-icons{display:flex;gap:6px;align-items:center;margin-left:auto}
 
 /* Tab bar */
-.tabbar{height:80px;border-top:1px solid var(--hair);display:flex;align-items:flex-start;
-  padding-top:6px;flex-shrink:0;background:rgba(251,248,241,.96);
+.tabbar{border-top:1px solid var(--hair);display:flex;align-items:flex-start;
+  padding-top:6px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px);
+  flex-shrink:0;background:rgba(251,248,241,.96);
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
 .tab-btn{flex:1;border:none;background:transparent;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px}
 .tab-label{font-size:10px;font-weight:500;line-height:1.2}
 
-/* Nav pill */
+/* Nav pill — hidden on phone, visible on desktop for demo */
 .nav-pill{position:fixed;top:14px;left:50%;transform:translateX(-50%);
   display:flex;flex-wrap:wrap;justify-content:center;gap:2px;padding:5px 6px;
   background:rgba(255,255,255,.93);-webkit-backdrop-filter:blur(16px);
@@ -74,6 +61,7 @@ body{background:radial-gradient(1200px 800px at 50% 40%,#F3EEE1,#E0DBCB 70%);
 .nav-btn{border:none;cursor:pointer;padding:5px 10px;border-radius:999px;
   font-size:11px;font-weight:700;font-family:inherit;transition:all .15s;
   text-transform:capitalize}
+@media(max-width:600px){.nav-pill{display:none}}
 
 /* Buttons */
 .btn{border:none;cursor:pointer;font-family:inherit;display:inline-flex;
@@ -363,43 +351,356 @@ const VOCAB=[
   {id:68,word:'Consent',ipa:'/kənˈsent/',pos:'n.',zh:'知情同意',def:'Your permission for a medical procedure',
    sentence:'You must sign a consent form before the operation.',
    zhSentence:'手术前您必须签署知情同意书。',mnemonic:'Con-(共同) + sent(意愿) → 共同同意',book:'clinic',emoji:'✍️'},
+  // ── ANATOMY LEVEL 1 ──────────────────────────────────────────────────────
+  {id:69,level:1,word:'Heart',ipa:'/hɑːrt/',pos:'n.',zh:'心脏',def:'The organ that pumps blood through your body',
+   sentence:'The doctor listened to her heart with a stethoscope.',zhSentence:'医生用听诊器听了她的心脏。',mnemonic:'心(xīn) = heart in Chinese — the center of your body just as 心 appears in many Chinese words',book:'anatomy',emoji:'❤️'},
+  {id:70,level:1,word:'Lung',ipa:'/lʌŋ/',pos:'n.',zh:'肺',def:'One of two organs in your chest used for breathing',
+   sentence:'Smoking can seriously damage your lungs over time.',zhSentence:'长期吸烟会严重损害你的肺。',mnemonic:'肺(fèi) — think "feel" your lungs expand with every breath',book:'anatomy',emoji:'🫁'},
+  {id:71,level:1,word:'Brain',ipa:'/breɪn/',pos:'n.',zh:'大脑',def:'The organ inside your head that controls thinking, feeling, and movement',
+   sentence:'Getting enough sleep helps your brain function better.',zhSentence:'充足的睡眠有助于大脑更好地运转。',mnemonic:'大脑(dà nǎo) = "big brain" — 大 means big, so your 大脑 is your big control center',book:'anatomy',emoji:'🧠'},
+  {id:72,level:1,word:'Bone',ipa:'/bəʊn/',pos:'n.',zh:'骨头',def:'The hard structures inside your body that form your skeleton',
+   sentence:'She broke a bone in her wrist when she fell.',zhSentence:'她摔倒时手腕骨折了。',mnemonic:'骨(gǔ) — the character looks like it has a skeleton structure inside, perfect for bones',book:'anatomy',emoji:'🦴'},
+  {id:73,level:1,word:'Muscle',ipa:'/ˈmʌsl/',pos:'n.',zh:'肌肉',def:'Body tissue that contracts to produce movement',
+   sentence:'His leg muscles were sore after the long hike.',zhSentence:'长途徒步后他的腿部肌肉很酸痛。',mnemonic:'肌肉(jī ròu) — 肌 sounds like "G" as in "gym," where you build muscles',book:'anatomy',emoji:'💪'},
+  {id:74,level:1,word:'Skin',ipa:'/skɪn/',pos:'n.',zh:'皮肤',def:'The outer layer that covers your entire body',
+   sentence:'Apply sunscreen to protect your skin from UV rays.',zhSentence:'涂上防晒霜来保护皮肤免受紫外线伤害。',mnemonic:'皮肤(pí fū) — 皮(pí) sounds like "peel," like peeling the skin of a fruit',book:'anatomy',emoji:'🖐️'},
+  {id:75,level:1,word:'Stomach',ipa:'/ˈstʌmək/',pos:'n.',zh:'胃',def:'The organ that receives and digests food',
+   sentence:'He had an upset stomach after eating too much spicy food.',zhSentence:'他吃了太多辛辣食物后胃不舒服。',mnemonic:'胃(wèi) — sounds like "way," food is on its way through your stomach',book:'anatomy',emoji:'🫃'},
+  {id:76,level:1,word:'Kidney',ipa:'/ˈkɪdni/',pos:'n.',zh:'肾脏',def:'One of two organs that filter waste from your blood and make urine',
+   sentence:'Drinking enough water helps keep your kidneys healthy.',zhSentence:'多喝水有助于保持肾脏健康。',mnemonic:'肾(shèn) — kidneys filter things clean, like shining them up',book:'anatomy',emoji:'🫘'},
+  {id:77,level:1,word:'Liver',ipa:'/ˈlɪvər/',pos:'n.',zh:'肝脏',def:'The large organ that cleans your blood and helps digest fats',
+   sentence:'Drinking too much alcohol can damage your liver.',zhSentence:'饮酒过多会损伤肝脏。',mnemonic:'肝(gān) — you need your liver to LIVE; "liver" literally contains the word "live"',book:'anatomy',emoji:'🟤'},
+  {id:78,level:1,word:'Throat',ipa:'/θrəʊt/',pos:'n.',zh:'喉咙',def:'The passage in your neck used for swallowing and breathing',
+   sentence:'She had a sore throat and could barely swallow.',zhSentence:'她喉咙痛，几乎无法吞咽。',mnemonic:'喉咙(hóu lóng) — 龙 means dragon; imagine a dragon fire burning your sore throat',book:'anatomy',emoji:'🗣️'},
+  {id:79,level:1,word:'Knee',ipa:'/niː/',pos:'n.',zh:'膝盖',def:'The joint in the middle of your leg that bends when you walk',
+   sentence:'His knee swelled up after he twisted it playing basketball.',zhSentence:'他打篮球时扭伤膝盖，膝盖肿了起来。',mnemonic:'膝(xī) — the K in knee is silent; a gentle knee bend needs no force',book:'anatomy',emoji:'🦵'},
+  {id:80,level:1,word:'Shoulder',ipa:'/ˈʃəʊldər/',pos:'n.',zh:'肩膀',def:'The joint connecting your arm to your body at the top',
+   sentence:'She carried her heavy bag on one shoulder all day.',zhSentence:'她整天把沉重的包背在一侧肩膀上。',mnemonic:'肩膀(jiān bǎng) — 肩 looks like a person carrying something on their shoulder',book:'anatomy',emoji:'🤷'},
+  {id:81,level:1,word:'Spine',ipa:'/spaɪn/',pos:'n.',zh:'脊柱',def:'The column of bones running down the center of your back',
+   sentence:'Good posture helps protect your spine from injury.',zhSentence:'良好的姿势有助于保护脊柱免受损伤。',mnemonic:'脊(jǐ) — think of a spiny ridge, like the bony bumps you feel along your back',book:'anatomy',emoji:'🔩'},
+  {id:82,level:1,word:'Ankle',ipa:'/ˈæŋkl/',pos:'n.',zh:'踝关节',def:'The joint connecting your foot to your leg',
+   sentence:'He sprained his ankle stepping off the curb.',zhSentence:'他踩下路缘石时扭伤了踝关节。',mnemonic:'踝(huái) — think "ow" when you twist your ankle. The ankle is your foot hinge',book:'anatomy',emoji:'🦶'},
+  {id:83,level:1,word:'Wrist',ipa:'/rɪst/',pos:'n.',zh:'手腕',def:'The joint connecting your hand to your forearm',
+   sentence:'She wears a brace on her wrist to help with pain.',zhSentence:'她戴着护腕来缓解疼痛。',mnemonic:'手腕(shǒu wàn) — 手 means hand, so 手腕 is literally your "hand joint"',book:'anatomy',emoji:'⌚'},
+  // ── ANATOMY LEVEL 2 ──────────────────────────────────────────────────────
+  {id:84,level:2,word:'Colon',ipa:'/ˈkəʊlən/',pos:'n.',zh:'结肠',def:'The large intestine; absorbs water and stores waste before elimination',
+   sentence:'A colonoscopy checks the colon for polyps or signs of cancer.',zhSentence:'结肠镜检查用于发现结肠息肉或癌症迹象。',mnemonic:'结肠(jié cháng) — 结 means "to connect," the colon connects digestion to elimination',book:'anatomy',emoji:'🌀'},
+  {id:85,level:2,word:'Esophagus',ipa:'/ɪˈsɒfəɡəs/',pos:'n.',zh:'食管',def:'The tube that carries food from your mouth down to your stomach',
+   sentence:'Acid reflux happens when stomach acid flows back up the esophagus.',zhSentence:'胃酸反流是指胃酸倒流回食管。',mnemonic:'食管(shí guǎn) — 食 means "food," 管 means "tube" — the food tube',book:'anatomy',emoji:'🍽️'},
+  {id:86,level:2,word:'Gallbladder',ipa:'/ˈɡɔːlblædər/',pos:'n.',zh:'胆囊',def:'A small sac under the liver that stores bile to help digest fats',
+   sentence:'She needed surgery to remove gallstones from her gallbladder.',zhSentence:'她需要手术切除胆囊中的胆结石。',mnemonic:'胆囊(dǎn náng) — 胆 also means "courage"; 胆量 means guts. Gall(胆汁) + bladder(囊)',book:'anatomy',emoji:'🫙'},
+  {id:87,level:2,word:'Pancreas',ipa:'/ˈpæŋkriəs/',pos:'n.',zh:'胰腺',def:'A gland that makes insulin to control blood sugar and enzymes to digest food',
+   sentence:'Diabetes can occur when the pancreas does not produce enough insulin.',zhSentence:'当胰腺不能产生足够胰岛素时，可能会出现糖尿病。',mnemonic:'Pan-(all) + creas-(flesh) → it does it all: sugar control AND digestion',book:'anatomy',emoji:'🍬'},
+  {id:88,level:2,word:'Cartilage',ipa:'/ˈkɑːtɪlɪdʒ/',pos:'n.',zh:'软骨',def:'Firm but flexible tissue that cushions joints and shapes ears and nose',
+   sentence:'The cartilage in her knee wore down from years of running.',zhSentence:'多年跑步导致她膝盖软骨磨损。',mnemonic:'软骨(ruǎn gǔ) — 软 means "soft," 骨 means "bone" — soft bone, exactly what cartilage is',book:'anatomy',emoji:'🦷'},
+  {id:89,level:2,word:'Thyroid',ipa:'/ˈθaɪrɔɪd/',pos:'n.',zh:'甲状腺',def:'A gland in your neck that controls your metabolism and energy levels',
+   sentence:'An underactive thyroid can make you feel tired and gain weight.',zhSentence:'甲状腺功能低下会让你感到疲劳并导致体重增加。',mnemonic:'甲状腺(jiǎ zhuàng xiàn) — 甲 means "armor." The thyroid is a shield-shaped gland controlling body energy',book:'anatomy',emoji:'🦋'},
+  {id:90,level:2,word:'Lymph node',ipa:'/lɪmf nəʊd/',pos:'n.',zh:'淋巴结',def:'Small glands throughout your body that filter harmful substances and fight infection',
+   sentence:'The doctor felt swollen lymph nodes in his neck during the checkup.',zhSentence:'医生在体检时摸到他颈部的淋巴结肿大。',mnemonic:'淋巴(lín bā) — lymph nodes are like security checkpoints in your body',book:'anatomy',emoji:'🔵'},
+  {id:91,level:2,word:'Vein',ipa:'/veɪn/',pos:'n.',zh:'静脉',def:'A blood vessel that carries blood back to the heart',
+   sentence:'The nurse had trouble finding a good vein to draw blood from.',zhSentence:'护士很难找到合适的静脉来抽血。',mnemonic:'静脉(jìng mài) — 静 means "quiet/still," veins quietly carry blood back to the heart',book:'anatomy',emoji:'💙'},
+  {id:92,level:2,word:'Nerve',ipa:'/nɜːv/',pos:'n.',zh:'神经',def:'A fiber that carries electrical signals between your brain and body parts',
+   sentence:'He pinched a nerve in his back and could not feel his leg properly.',zhSentence:'他背部神经受压，腿部感觉不正常。',mnemonic:'神经(shén jīng) — 神 means "divine." Nerves carry messages like divine signals throughout your body',book:'anatomy',emoji:'⚡'},
+  {id:93,level:2,word:'Pelvis',ipa:'/ˈpelvɪs/',pos:'n.',zh:'骨盆',def:'The bowl-shaped ring of bones at the base of your spine that supports your organs',
+   sentence:'She fractured her pelvis in the car accident.',zhSentence:'她在车祸中骨盆骨折。',mnemonic:'骨盆(gǔ pén) — 盆 means "basin/bowl," the pelvis is a bony bowl holding your organs',book:'anatomy',emoji:'🪣'},
+  {id:94,level:2,word:'Uterus',ipa:'/ˈjuːtərəs/',pos:'n.',zh:'子宫',def:'The organ in women where a baby develops during pregnancy',
+   sentence:'The ultrasound showed the baby developing inside the uterus.',zhSentence:'超声波显示婴儿在子宫内正在发育。',mnemonic:'子宫(zǐ gōng) — 子 means "child," 宫 means "palace" — the uterus is the child palace',book:'anatomy',emoji:'🤱'},
+  {id:95,level:2,word:'Diaphragm',ipa:'/ˈdaɪəfræm/',pos:'n.',zh:'膈肌',def:'The dome-shaped muscle below your lungs that controls breathing',
+   sentence:'Hiccups happen when your diaphragm suddenly contracts involuntarily.',zhSentence:'打嗝是因为膈肌突然不自主地收缩。',mnemonic:'膈(gé) — the diaphragm separates the chest and abdomen; Dia-(through) + phragm(barrier)',book:'anatomy',emoji:'🫧'},
+  // ── ANATOMY LEVEL 3 ──────────────────────────────────────────────────────
+  {id:96,level:3,word:'Hemorrhoids',ipa:'/ˈhemərɔɪdz/',pos:'n.',zh:'痔疮',def:'Swollen veins in or around the rectum causing pain, itching, or bleeding',
+   sentence:'The doctor recommended a high-fiber diet to help manage his hemorrhoids.',zhSentence:'医生建议他多吃高纤维食物来缓解痔疮。',mnemonic:'痔(zhì) — Hemorrhoid = hemo(blood) + rrhoid(flowing). Swollen blood vessels in the rectum',book:'anatomy',emoji:'🩸'},
+  {id:97,level:3,word:'Hernia',ipa:'/ˈhɜːniə/',pos:'n.',zh:'疝气',def:'When an internal organ pushes through a weak spot in the surrounding muscle',
+   sentence:'He was advised to avoid heavy lifting after being diagnosed with a hernia.',zhSentence:'被诊断为疝气后，医生建议他避免搬重物。',mnemonic:'疝(shàn) — sounds like "shan" (山=mountain); something bulging out like a little mountain',book:'anatomy',emoji:'⚠️'},
+  {id:98,level:3,word:'Gastrointestinal',ipa:'/ˌɡæstrəʊɪnˈtestɪnəl/',pos:'adj.',zh:'胃肠的',def:'Relating to the stomach and intestines together',
+   sentence:'She visited a specialist for gastrointestinal problems like bloating and cramping.',zhSentence:'她因腹胀和痉挛等胃肠问题去看了专科医生。',mnemonic:'胃肠(wèi cháng) — 胃=stomach, 肠=intestine. Gastro=stomach, intestinal=gut. Two words, one system',book:'anatomy',emoji:'🌿'},
+  {id:99,level:3,word:'Osteoporosis',ipa:'/ˌɒstiəʊpəˈrəʊsɪs/',pos:'n.',zh:'骨质疏松',def:'A condition where bones become weak and brittle, making them easy to break',
+   sentence:'Her doctor recommended calcium supplements to slow her osteoporosis.',zhSentence:'医生建议她服用钙片来减缓骨质疏松的进展。',mnemonic:'骨质疏松(gǔ zhì shū sōng) — 疏松 means "loose/porous." Osteo=bone, poro=porous. Porous bones',book:'anatomy',emoji:'🦴'},
+  {id:100,level:3,word:'Cardiovascular',ipa:'/ˌkɑːdiəʊˈvæskjʊlər/',pos:'adj.',zh:'心血管的',def:'Relating to the heart and blood vessels',
+   sentence:'Regular exercise is one of the best ways to improve cardiovascular health.',zhSentence:'定期锻炼是改善心血管健康的最佳方式之一。',mnemonic:'心血管(xīn xuè guǎn) — 心=heart, 血=blood, 管=vessel. Cardio=heart, vascular=vessels',book:'anatomy',emoji:'🏃'},
+  {id:101,level:3,word:'Bladder',ipa:'/ˈblædər/',pos:'n.',zh:'膀胱',def:'The organ that stores urine until you are ready to urinate',
+   sentence:'A bladder infection causes a burning sensation when urinating.',zhSentence:'膀胱感染会导致排尿时有灼热感。',mnemonic:'膀胱(páng guāng) — think "pang," the urgent feeling when your bladder is full',book:'anatomy',emoji:'💧'},
+  {id:102,level:3,word:'Spleen',ipa:'/spliːn/',pos:'n.',zh:'脾脏',def:'An organ near the stomach that filters blood and helps fight infection',
+   sentence:'A hard blow to the abdomen can rupture the spleen and cause internal bleeding.',zhSentence:'腹部受到重击可能导致脾脏破裂并引发内出血。',mnemonic:'脾(pí) — the spleen keeps blood clean, like a natural filter station',book:'anatomy',emoji:'🫀'},
+  {id:103,level:3,word:'Appendix',ipa:'/əˈpendɪks/',pos:'n.',zh:'阑尾',def:'A small tube attached to the large intestine that can become infected',
+   sentence:'He was rushed to the hospital when his appendix became inflamed.',zhSentence:'他的阑尾发炎，被紧急送往医院。',mnemonic:'阑尾(lán wěi) — 尾 means "tail," the appendix is like a little tail on your intestine',book:'anatomy',emoji:'☝️'},
+  {id:104,level:3,word:'Capillary',ipa:'/ˈkæpɪləri/',pos:'n.',zh:'毛细血管',def:'The smallest blood vessels in the body, connecting arteries to veins',
+   sentence:'Capillaries are so thin that blood cells must pass through one at a time.',zhSentence:'毛细血管非常细，血细胞必须一个接一个地通过。',mnemonic:'毛细(máo xì) — 毛 means "hair," 细 means "thin" — as thin as a hair. Capilla = Latin for hair',book:'anatomy',emoji:'🕸️'},
+  {id:105,level:3,word:'Meningitis',ipa:'/ˌmenɪnˈdʒaɪtɪs/',pos:'n.',zh:'脑膜炎',def:'A serious inflammation of the membranes surrounding the brain and spinal cord',
+   sentence:'Stiff neck and high fever can be warning signs of meningitis.',zhSentence:'颈部僵硬和高烧可能是脑膜炎的警告信号。',mnemonic:'脑膜炎(nǎo mó yán) — 炎 means "inflammation." Menin=membrane, itis=inflammation',book:'anatomy',emoji:'🧠'},
+  // ── CARDIOLOGY LEVEL 1 ───────────────────────────────────────────────────
+  {id:106,level:1,word:'Heart attack',ipa:'/hɑːrt əˈtæk/',pos:'n.',zh:'心脏病发作',def:'Sudden blockage of blood supply to part of the heart',
+   sentence:'Call emergency services immediately if you suspect a heart attack.',zhSentence:'如果怀疑心脏病发作，请立即拨打急救电话。',mnemonic:'心脏病发作(xīn zàng bìng fā zuò) — 发作 means "sudden attack." Heart under attack — call for help fast',book:'cardiology',emoji:'💔'},
+  {id:107,level:1,word:'Blood pressure',ipa:'/blʌd ˈpreʃər/',pos:'n.',zh:'血压',def:'The force of blood pushing against the walls of your arteries',
+   sentence:'A reading of 120/80 is considered normal blood pressure.',zhSentence:'120/80的读数被认为是正常血压。',mnemonic:'血压(xuè yā) — 血=blood, 压=pressure. Blood pressure: exactly what it says',book:'cardiology',emoji:'🩺'},
+  {id:108,level:1,word:'Pulse',ipa:'/pʌls/',pos:'n.',zh:'脉搏',def:'The rhythmic beating felt in your wrist or neck as your heart pumps blood',
+   sentence:'The paramedic checked his pulse to see if his heart was still beating.',zhSentence:'急救人员检查了他的脉搏，看心脏是否还在跳动。',mnemonic:'脉搏(mài bó) — 脉 means "pulse/vein." Feel the pulse, feel alive. 搏 sounds like "beat"',book:'cardiology',emoji:'💓'},
+  {id:109,level:1,word:'Stroke',ipa:'/strəʊk/',pos:'n.',zh:'中风',def:'Brain damage caused by a blocked or burst blood vessel in the brain',
+   sentence:'FAST — Face drooping, Arm weakness, Speech trouble — are signs of a stroke.',zhSentence:'面部下垂、手臂无力、言语障碍是中风的迹象，记住"FAST"。',mnemonic:'中风(zhòng fēng) — 中 means "hit," 风 means "wind." Act FAST: Face, Arms, Speech, Time',book:'cardiology',emoji:'🧠'},
+  // ── CARDIOLOGY LEVEL 2 ───────────────────────────────────────────────────
+  {id:110,level:2,word:'Arrhythmia',ipa:'/əˈrɪðmiə/',pos:'n.',zh:'心律失常',def:'An irregular heartbeat — too fast, too slow, or uneven',
+   sentence:'She wore a heart monitor for two days to detect any arrhythmia.',zhSentence:'她佩戴了两天心脏监测仪来检测是否有心律失常。',mnemonic:'心律失常(xīn lǜ shī cháng) — 失常 means "abnormal." A = without, rhythmia = rhythm',book:'cardiology',emoji:'📉'},
+  {id:111,level:2,word:'Angina',ipa:'/ænˈdʒaɪnə/',pos:'n.',zh:'心绞痛',def:'Chest pain or tightness caused by reduced blood flow to the heart muscle',
+   sentence:'He kept nitroglycerin pills nearby in case he had an angina attack.',zhSentence:'他随身携带硝酸甘油片，以备心绞痛发作时使用。',mnemonic:'心绞痛(xīn jiǎo tòng) — 绞 means "squeezing/twisting" — angina feels like someone squeezing your heart',book:'cardiology',emoji:'😣'},
+  {id:112,level:2,word:'Clot',ipa:'/klɒt/',pos:'n.',zh:'血栓',def:'A thick lump of hardened blood that can block blood vessels',
+   sentence:'The doctor found a blood clot in her leg and started her on blood thinners.',zhSentence:'医生发现她腿部有血栓，并开始给她服用抗凝血药。',mnemonic:'血栓(xuè shuān) — 栓 means "plug/stopper." A clot CLOGS your vessels like a plug blocking a drain',book:'cardiology',emoji:'🔴'},
+  {id:113,level:2,word:'Murmur',ipa:'/ˈmɜːmər/',pos:'n.',zh:'心脏杂音',def:'An unusual whooshing sound heard when a doctor listens to the heart',
+   sentence:'The pediatrician detected a slight heart murmur during the child checkup.',zhSentence:'儿科医生在孩子体检时发现轻微的心脏杂音。',mnemonic:'杂音(zá yīn) — 杂 means "mixed/noisy." A murmur is an extra whooshing noise mixed with heartbeats',book:'cardiology',emoji:'👂'},
+  {id:114,level:2,word:'ECG',ipa:'/ˌiːsiːˈdʒiː/',pos:'n.',zh:'心电图',def:'A test that records the electrical activity of the heart using electrodes on the skin',
+   sentence:'The ER doctor ordered an ECG to check if he was having a heart attack.',zhSentence:'急诊医生开了心电图检查，以确认他是否在心脏病发作。',mnemonic:'心电图(xīn diàn tú) — 电 means "electric," 图 means "picture." ECG = electric heart graph',book:'cardiology',emoji:'📊'},
+  {id:115,level:2,word:'Stenosis',ipa:'/stɪˈnəʊsɪs/',pos:'n.',zh:'狭窄',def:'Abnormal narrowing of a blood vessel or heart valve that restricts blood flow',
+   sentence:'He needed surgery to correct severe stenosis of the aortic valve.',zhSentence:'他需要手术来纠正严重的主动脉瓣狭窄。',mnemonic:'狭窄(xiá zhǎi) — both characters mean "narrow." Steno = narrow in Greek. Stenosis = narrowing condition',book:'cardiology',emoji:'🔧'},
+  // ── CARDIOLOGY LEVEL 3 ───────────────────────────────────────────────────
+  {id:116,level:3,word:'Myocardial infarction',ipa:'/ˌmaɪəˈkɑːdiəl ɪnˈfɑːkʃən/',pos:'n.',zh:'心肌梗死',def:'Medical term for a heart attack; death of heart muscle from blocked blood supply',
+   sentence:'The patient was rushed to surgery following a myocardial infarction.',zhSentence:'患者在心肌梗死后被紧急送去手术。',mnemonic:'心肌梗死(xīn jī gěng sǐ) — 梗死 means "blockage death." Myo=muscle, cardial=heart, infarction=tissue death',book:'cardiology',emoji:'❤️‍🔥'},
+  {id:117,level:3,word:'Atherosclerosis',ipa:'/ˌæθərəʊsklɪˈrəʊsɪs/',pos:'n.',zh:'动脉粥样硬化',def:'Build-up of fatty plaque inside artery walls that hardens them and reduces blood flow',
+   sentence:'Years of a high-fat diet contributed to his atherosclerosis and stroke risk.',zhSentence:'多年的高脂饮食导致了他的动脉粥样硬化，增加了中风风险。',mnemonic:'动脉硬化(dòng mài yìng huà) — 硬化 means "hardening." Athero=porridge-like plaque, sclerosis=hardening',book:'cardiology',emoji:'🫙'},
+  {id:118,level:3,word:'Aorta',ipa:'/eɪˈɔːtə/',pos:'n.',zh:'主动脉',def:'The largest artery in the body, carrying blood from the heart to the rest of the body',
+   sentence:'An aneurysm in the aorta is life-threatening if it ruptures.',zhSentence:'主动脉瘤一旦破裂，危及生命。',mnemonic:'主动脉(zhǔ dòng mài) — 主 means "main/master." The aorta is the master highway of blood from the heart',book:'cardiology',emoji:'🛣️'},
+  {id:119,level:3,word:'Pacemaker',ipa:'/ˈpeɪsmeɪkər/',pos:'n.',zh:'起搏器',def:'A small device implanted in the chest to help control an irregular or too-slow heartbeat',
+   sentence:'After his arrhythmia diagnosis, surgeons implanted a pacemaker.',zhSentence:'心律失常确诊后，外科医生为他植入了起搏器。',mnemonic:'起搏器(qǐ bó qì) — 起搏 means "to pace/start beating." A pacemaker sets the pace — like a drummer keeping rhythm',book:'cardiology',emoji:'🔋'},
+  {id:120,level:3,word:'Defibrillator',ipa:'/dɪˈfɪbrɪleɪtər/',pos:'n.',zh:'除颤器',def:'A device that delivers an electric shock to restore a normal heartbeat during cardiac arrest',
+   sentence:'The staff used an AED defibrillator on the man who collapsed in the shopping mall.',zhSentence:'工作人员用AED除颤器对在商场晕倒的男子进行了急救。',mnemonic:'除颤(chú chàn) — 颤 means "trembling," 除 means "remove." De-fibrillator removes chaotic heart trembling',book:'cardiology',emoji:'⚡'},
+  // ── CLINIC COMMUNICATION LEVEL 1 ─────────────────────────────────────────
+  {id:121,level:1,word:'Appointment',ipa:'/əˈpɔɪntmənt/',pos:'n.',zh:'预约',def:'A scheduled time to see a doctor or healthcare provider',
+   sentence:'She made an appointment with her doctor for next Tuesday at 10 a.m.',zhSentence:'她预约了下周二上午10点看医生。',mnemonic:'预约(yù yuē) — 预 means "in advance," 约 means "agreement." Making an appointment = agreeing in advance',book:'clinic',emoji:'📅'},
+  {id:122,level:1,word:'Ambulance',ipa:'/ˈæmbjʊləns/',pos:'n.',zh:'救护车',def:'An emergency vehicle that transports sick or injured people to the hospital',
+   sentence:'Someone called an ambulance when the man collapsed on the street.',zhSentence:'当那名男子在街上晕倒时，有人叫了救护车。',mnemonic:'救护车(jiù hù chē) — 救 means "rescue," 护 means "protect," 车 means "vehicle." Rescue-protect-vehicle',book:'clinic',emoji:'🚑'},
+  {id:123,level:1,word:'Medical history',ipa:'/ˈmedɪkl ˈhɪstri/',pos:'n.',zh:'病史',def:'A record of a person\'s past illnesses, surgeries, medications, and health conditions',
+   sentence:'Please fill out this form with your medical history before seeing the doctor.',zhSentence:'请在就诊前填写这张病史表格。',mnemonic:'病史(bìng shǐ) — 病 means "illness," 史 means "history." Your illness history — everything your body has been through',book:'clinic',emoji:'📋'},
+  {id:124,level:1,word:'Vital signs',ipa:'/ˈvaɪtl saɪnz/',pos:'n.',zh:'生命体征',def:'Basic measurements showing how well your body is working: temperature, pulse, breathing, blood pressure',
+   sentence:'The nurse checked his vital signs every four hours throughout the night.',zhSentence:'护士整晚每四小时检查一次他的生命体征。',mnemonic:'生命体征(shēng mìng tǐ zhēng) — 生命 means "life." Vital signs are the signs of life',book:'clinic',emoji:'📟'},
+  {id:125,level:1,word:'X-ray',ipa:'/ˈeks reɪ/',pos:'n.',zh:'X光',def:'A type of imaging that uses radiation to take pictures of bones inside the body',
+   sentence:'The doctor ordered an X-ray to check if her wrist was fractured.',zhSentence:'医生开了X光检查，以确认她的手腕是否骨折。',mnemonic:'X光(X guāng) — 光 means "light." X-rays are mysterious light that sees right through you',book:'clinic',emoji:'🩻'},
+  // ── CLINIC COMMUNICATION LEVEL 2 ─────────────────────────────────────────
+  {id:126,level:2,word:'Ultrasound',ipa:'/ˈʌltrəsaʊnd/',pos:'n.',zh:'超声波检查',def:'An imaging test using sound waves to see pictures of organs inside the body',
+   sentence:'The pregnant woman had an ultrasound to check her baby\'s development.',zhSentence:'孕妇做了超声波检查来了解宝宝的发育情况。',mnemonic:'超声波(chāo shēng bō) — 超 means "ultra/beyond," 声 means "sound." Ultra-sound: beyond hearing, seeing inside',book:'clinic',emoji:'🔊'},
+  {id:127,level:2,word:'CT scan',ipa:'/ˌsiːˈtiː skæn/',pos:'n.',zh:'CT扫描',def:'Detailed X-ray that takes cross-section images of the body from many angles',
+   sentence:'The CT scan revealed a small tumor near his kidney.',zhSentence:'CT扫描发现他肾脏附近有一个小肿瘤。',mnemonic:'CT = Computed Tomography. 扫描(sǎo miáo) means "scan." CT cuts your body into picture slices — without cutting',book:'clinic',emoji:'🖥️'},
+  {id:128,level:2,word:'MRI',ipa:'/ˌemɑːrˈaɪ/',pos:'n.',zh:'核磁共振',def:'A scan using magnetic fields to create detailed images of soft tissues and organs',
+   sentence:'She needed an MRI to check for damage to the ligaments in her knee.',zhSentence:'她需要做核磁共振来检查膝盖韧带是否受损。',mnemonic:'MRI = Magnetic Resonance Imaging. It uses magnetism to make body atoms "resonate" and form images',book:'clinic',emoji:'🧲'},
+  {id:129,level:2,word:'Inpatient',ipa:'/ˈɪnpeɪʃənt/',pos:'n.',zh:'住院患者',def:'A patient admitted to the hospital who stays overnight or longer for treatment',
+   sentence:'After surgery, she became an inpatient and stayed in hospital for three days.',zhSentence:'手术后，她成为住院患者，在医院住了三天。',mnemonic:'住院(zhù yuàn) — 住 means "to stay/reside." Inpatient = staying IN the hospital',book:'clinic',emoji:'🛏️'},
+  {id:130,level:2,word:'Outpatient',ipa:'/ˈaʊtpeɪʃənt/',pos:'n.',zh:'门诊患者',def:'A patient who receives treatment without being admitted overnight',
+   sentence:'The procedure was minor enough to be done on an outpatient basis, so he went home the same day.',zhSentence:'这个手术可以作为门诊手术进行，他当天就回家了。',mnemonic:'门诊(mén zhěn) — 门 means "door." Outpatient comes in through the door and goes back out same day',book:'clinic',emoji:'🚶'},
+  {id:131,level:2,word:'Triage',ipa:'/ˈtriːɑːʒ/',pos:'n.',zh:'分诊',def:'Sorting patients by urgency so the most critical are treated first',
+   sentence:'In the busy emergency room, the nurse performed triage on every arriving patient.',zhSentence:'在繁忙的急诊室，护士对每位到来的患者进行分诊。',mnemonic:'分诊(fēn zhěn) — 分 means "to sort/divide." Triage = sorting patients by urgency. French "trier" = to sort',book:'clinic',emoji:'🚦'},
+  {id:132,level:2,word:'Prognosis',ipa:'/prɒɡˈnəʊsɪs/',pos:'n.',zh:'预后',def:'A prediction about the likely course and outcome of a disease',
+   sentence:'The oncologist gave her a positive prognosis after the tumor was completely removed.',zhSentence:'肿瘤被完全切除后，肿瘤科医生给出了积极的预后评估。',mnemonic:'预后(yù hòu) — 预 means "predict," 后 means "after/future." Pro = before, gnosis = knowledge',book:'clinic',emoji:'🔮'},
+  // ── CLINIC COMMUNICATION LEVEL 3 ─────────────────────────────────────────
+  {id:133,level:3,word:'Anesthesia',ipa:'/ˌænɪsˈθiːziə/',pos:'n.',zh:'麻醉',def:'Medicine used to block pain or make a patient unconscious during surgery',
+   sentence:'She was under general anesthesia for the entire four-hour surgery.',zhSentence:'她在整个四小时的手术过程中都处于全身麻醉状态。',mnemonic:'麻醉(má zuì) — 麻 means "numb," 醉 means "unconscious." An = without, esthesia = feeling',book:'clinic',emoji:'💤'},
+  {id:134,level:3,word:'Ventilator',ipa:'/ˈventɪleɪtər/',pos:'n.',zh:'呼吸机',def:'A machine that helps or takes over breathing for patients who cannot breathe on their own',
+   sentence:'The critically ill patient was placed on a ventilator in the ICU.',zhSentence:'这名危重患者在重症监护室被接上了呼吸机。',mnemonic:'呼吸机(hū xī jī) — 呼吸 means "breathe," 机 means "machine." Breathing machine: simple and direct',book:'clinic',emoji:'💨'},
+  {id:135,level:3,word:'Incision',ipa:'/ɪnˈsɪʒən/',pos:'n.',zh:'切口',def:'A surgical cut made in the body during an operation',
+   sentence:'The surgeon made a small incision in his abdomen to remove the appendix.',zhSentence:'外科医生在他腹部做了一个小切口来切除阑尾。',mnemonic:'切口(qiē kǒu) — 切 means "to cut," 口 means "opening." An incision is a cut-opening in the body',book:'clinic',emoji:'🔪'},
+  {id:136,level:3,word:'Contraindication',ipa:'/ˌkɒntrəˌɪndɪˈkeɪʃən/',pos:'n.',zh:'禁忌症',def:'A reason why a particular treatment or drug should NOT be used because it could be harmful',
+   sentence:'Pregnancy is a contraindication for many medications that could harm the baby.',zhSentence:'妊娠是许多可能伤害胎儿药物的禁忌症。',mnemonic:'禁忌(jìn jì) means "forbidden/taboo." Contra = against, indication = recommendation. A red flag warning',book:'clinic',emoji:'🚫'},
+  // ── PHARMACOLOGY LEVEL 1 ────────────────────────────────────────────────
+  {id:137,level:1,word:'Tablet',ipa:'/ˈtæblɪt/',pos:'n.',zh:'药片',def:'A solid, flat pill containing medicine that you swallow',
+   sentence:'Take one tablet with water after each meal.',zhSentence:'每餐后用水服一片药片。',mnemonic:'药片(yào piàn) — 片 means "flat piece/slice." A tablet is a little flat piece of medicine',book:'pharma',emoji:'⬜'},
+  {id:138,level:1,word:'Capsule',ipa:'/ˈkæpsjuːl/',pos:'n.',zh:'胶囊',def:'A small gelatin container holding powdered or liquid medicine inside',
+   sentence:'The antibiotic comes in capsule form — swallow it whole, do not chew it.',zhSentence:'这种抗生素是胶囊剂型——整颗吞服，不要咀嚼。',mnemonic:'胶囊(jiāo náng) — 胶 means "gelatin," 囊 means "pouch/sac." A gelatin pouch of medicine',book:'pharma',emoji:'💊'},
+  {id:139,level:1,word:'Syrup',ipa:'/ˈsɪrəp/',pos:'n.',zh:'糖浆',def:'A thick sweet liquid medicine, often given to children',
+   sentence:'The pediatrician prescribed a cherry-flavored syrup for her cough.',zhSentence:'儿科医生给她开了樱桃味止咳糖浆。',mnemonic:'糖浆(táng jiāng) — 糖 means "sugar," 浆 means "thick liquid." Sugar-liquid = sweet medicine',book:'pharma',emoji:'🍯'},
+  {id:140,level:1,word:'Cream',ipa:'/kriːm/',pos:'n.',zh:'药膏',def:'A thick smooth substance applied to the skin to treat rashes, pain, or infections',
+   sentence:'Apply this antifungal cream to the affected area twice a day.',zhSentence:'每天两次将这种抗真菌药膏涂在患处。',mnemonic:'药膏(yào gāo) — 膏 means "paste/ointment." Drug-paste = medicated cream applied to skin',book:'pharma',emoji:'🧴'},
+  {id:141,level:1,word:'Pharmacist',ipa:'/ˈfɑːməsɪst/',pos:'n.',zh:'药剂师',def:'A trained professional who prepares and dispenses medications',
+   sentence:'The pharmacist explained how to take the new medication and warned about side effects.',zhSentence:'药剂师解释了如何服用新药，并提醒了副作用。',mnemonic:'药剂师(yào jì shī) — 师 means "master," 药剂 means "medicine preparation." A master of medicines',book:'pharma',emoji:'👨‍⚕️'},
+  {id:142,level:1,word:'Refill',ipa:'/ˈriːfɪl/',pos:'n.',zh:'续药',def:'Getting a new supply of a prescription medicine when your previous supply runs out',
+   sentence:'She called the pharmacy to request a refill for her blood pressure medication.',zhSentence:'她打电话给药店要求续开她的血压药。',mnemonic:'续药(xù yào) — 续 means "to continue/renew." A refill re-fills your prescription to continue treatment',book:'pharma',emoji:'🔄'},
+  // ── PHARMACOLOGY LEVEL 2 ────────────────────────────────────────────────
+  {id:143,level:2,word:'Antihistamine',ipa:'/ˌæntiˈhɪstəmiːn/',pos:'n.',zh:'抗组胺药',def:'Medicine that reduces allergy symptoms like sneezing, itching, and runny nose',
+   sentence:'She took an antihistamine before going outside during allergy season.',zhSentence:'过敏季节外出前，她服用了抗组胺药。',mnemonic:'抗组胺(kàng zǔ àn) — 抗 means "anti/fight." Anti + histamine: fights histamine, the allergy chemical',book:'pharma',emoji:'🤧'},
+  {id:144,level:2,word:'Antacid',ipa:'/ˌænˈtæsɪd/',pos:'n.',zh:'抗酸药',def:'Medicine that neutralizes stomach acid to relieve heartburn or indigestion',
+   sentence:'He chewed an antacid tablet after the spicy meal to calm his heartburn.',zhSentence:'吃了辛辣食物后，他嚼了一片抗酸药来缓解烧心。',mnemonic:'抗酸(kàng suān) — 抗 = anti, 酸 = acid/sour. Antacid = anti + acid. Fights stomach acid',book:'pharma',emoji:'🫙'},
+  {id:145,level:2,word:'Laxative',ipa:'/ˈlæksətɪv/',pos:'n.',zh:'泻药',def:'Medicine that helps relieve constipation by stimulating bowel movements',
+   sentence:'The doctor recommended a mild laxative after surgery since pain medication caused constipation.',zhSentence:'由于止痛药引起便秘，医生建议术后服用温和的泻药。',mnemonic:'泻药(xiè yào) — 泻 means "to purge/drain." Lax = loose/relaxed. A laxative relaxes the bowel',book:'pharma',emoji:'💧'},
+  {id:146,level:2,word:'Diuretic',ipa:'/ˌdaɪjʊˈretɪk/',pos:'n.',zh:'利尿剂',def:'Medicine that increases urine production to remove excess fluid from the body',
+   sentence:'Her doctor prescribed a diuretic to reduce the swelling in her ankles.',zhSentence:'医生开了利尿剂来消除她踝部的肿胀。',mnemonic:'利尿(lì niào) — 利 means "to promote," 尿 means "urine." Promotes urination. Dia + urine = makes you urinate more',book:'pharma',emoji:'💦'},
+  {id:147,level:2,word:'Steroid',ipa:'/ˈstɪərɔɪd/',pos:'n.',zh:'类固醇',def:'A powerful anti-inflammatory medicine used to treat many conditions',
+   sentence:'The doctor prescribed a short course of steroids to reduce the severe inflammation.',zhSentence:'医生开了短疗程类固醇药物来减轻严重炎症。',mnemonic:'类固醇(lèi gù chún) — 类 means "type/class." Steroids are a class of powerful compounds. Use carefully',book:'pharma',emoji:'💪'},
+  {id:148,level:2,word:'Blood thinner',ipa:'/blʌd ˈθɪnər/',pos:'n.',zh:'抗凝血药',def:'Medicine that prevents blood clots from forming or getting bigger',
+   sentence:'Patients with artificial heart valves often need to take a blood thinner daily.',zhSentence:'安装人工心脏瓣膜的患者通常需要每天服用抗凝血药。',mnemonic:'抗凝血(kàng níng xuè) — 凝 means "to congeal/clot." Anti-clotting medicine keeps blood flowing freely',book:'pharma',emoji:'🩸'},
+  {id:149,level:2,word:'Generic drug',ipa:'/dʒɪˈnerɪk drʌɡ/',pos:'n.',zh:'仿制药',def:'A copy of a brand-name drug with the same active ingredients but at a lower price',
+   sentence:'The pharmacist suggested switching to the generic drug to save money.',zhSentence:'药剂师建议改用仿制药来节省费用。',mnemonic:'仿制药(fǎng zhì yào) — 仿 means "imitate/copy." Generic = general/non-branded version of a drug',book:'pharma',emoji:'💰'},
+  // ── PHARMACOLOGY LEVEL 3 ────────────────────────────────────────────────
+  {id:150,level:3,word:'Drug interaction',ipa:'/drʌɡ ˌɪntərˈækʃən/',pos:'n.',zh:'药物相互作用',def:'When two or more drugs affect each other, sometimes dangerously',
+   sentence:'Always tell your pharmacist all the medications you take to avoid dangerous drug interactions.',zhSentence:'务必告诉药剂师你服用的所有药物，以避免危险的药物相互作用。',mnemonic:'药物相互作用(yào wù xiāng hù zuò yòng) — 相互 means "mutual." Two drugs acting on each other',book:'pharma',emoji:'⚠️'},
+  {id:151,level:3,word:'Placebo',ipa:'/pləˈsiːbəʊ/',pos:'n.',zh:'安慰剂',def:'A harmless pill with no active medicine, used in clinical trials as a comparison',
+   sentence:'In the clinical trial, half the patients received the real drug and half received a placebo.',zhSentence:'在临床试验中，一半患者服用了真正的药物，另一半服用了安慰剂。',mnemonic:'安慰剂(ān wèi jì) — 安慰 means "comfort/console." Placebo = Latin for "I will please." No real medicine',book:'pharma',emoji:'🍬'},
+  {id:152,level:3,word:'Half-life',ipa:'/hɑːf laɪf/',pos:'n.',zh:'半衰期',def:'The time it takes for the amount of a drug in the body to reduce by half',
+   sentence:'A drug with a long half-life stays active in the body for many hours or days.',zhSentence:'半衰期长的药物在体内可以保持活性数小时甚至数天。',mnemonic:'半衰期(bàn shuāi qī) — 半 means "half," 衰 means "decline," 期 means "period." Half-decline-period',book:'pharma',emoji:'⏳'},
+  // ── ANATOMY LEVEL 1 ADDITIONS ────────────────────────────────────────────
+  {id:153,level:1,word:'Ear',ipa:'/ɪər/',pos:'n.',zh:'耳朵',def:'The organ on the sides of your head that you use to hear sounds',
+   sentence:'The doctor looked inside her ear to check for an infection.',zhSentence:'医生查看了她的耳朵，检查是否有感染。',mnemonic:'耳(ěr) — the character 耳 looks like an ear: a rectangle with lines, perfect for the hearing organ',book:'anatomy',emoji:'👂'},
+  {id:154,level:1,word:'Eye',ipa:'/aɪ/',pos:'n.',zh:'眼睛',def:'The organ in your face that you use to see',
+   sentence:'She wore glasses to correct her blurry eyesight.',zhSentence:'她戴眼镜来矫正模糊的视力。',mnemonic:'眼(yǎn) contains 目 (eye). 目 itself looks like an eye viewed from the front — two horizontal lines inside a rectangle',book:'anatomy',emoji:'👁️'},
+  {id:155,level:1,word:'Nose',ipa:'/nəʊz/',pos:'n.',zh:'鼻子',def:'The part of your face above your mouth that you use to breathe and smell',
+   sentence:'She blew her nose into a tissue after the cold.',zhSentence:'感冒后她用纸巾擤了擤鼻子。',mnemonic:'鼻(bí) contains 自 (self) at the top. In Chinese, 自 means self — your nose points at yourself, center of your face',book:'anatomy',emoji:'👃'},
+  {id:156,level:1,word:'Tongue',ipa:'/tʌŋ/',pos:'n.',zh:'舌头',def:'The soft, movable organ inside your mouth used for tasting, chewing, and speaking',
+   sentence:'She burnt her tongue on the hot soup.',zhSentence:'她被热汤烫伤了舌头。',mnemonic:'舌(shé) — something that comes out of the mouth (口). The tongue flicks out to taste things',book:'anatomy',emoji:'👅'},
+  {id:157,level:1,word:'Jaw',ipa:'/dʒɔː/',pos:'n.',zh:'下颌',def:'The lower bone of your face that holds your lower teeth and moves when you eat or talk',
+   sentence:'He had jaw pain after the dentist appointment.',zhSentence:'牙医检查后他感到下颌疼痛。',mnemonic:'下颌(xià hé) — 下 means "lower." The jaw is the lower part of your face that moves up and down',book:'anatomy',emoji:'🦷'},
+  {id:158,level:1,word:'Chest',ipa:'/tʃest/',pos:'n.',zh:'胸部',def:'The front part of your body between your neck and your stomach, enclosing the heart and lungs',
+   sentence:'He felt a tightness in his chest and went to see a doctor.',zhSentence:'他感到胸部发紧，于是去看了医生。',mnemonic:'胸(xiōng) — the chest houses your most vital organs: heart and lungs. Think "X marks the chest" on a treasure map',book:'anatomy',emoji:'🫁'},
+  // ── ANATOMY LEVEL 2 ADDITIONS ────────────────────────────────────────────
+  {id:159,level:2,word:'Cornea',ipa:'/ˈkɔːniə/',pos:'n.',zh:'角膜',def:'The clear, dome-shaped surface at the front of the eye that focuses incoming light',
+   sentence:'She needed corneal surgery to correct her severe vision problem.',zhSentence:'她需要角膜手术来矫正严重的视力问题。',mnemonic:'角膜(jiǎo mó) — 角 means "horn/corner." The cornea is the clear curved window at the front of your eye',book:'anatomy',emoji:'👁️'},
+  {id:160,level:2,word:'Eardrum',ipa:'/ˈɪərdrʌm/',pos:'n.',zh:'鼓膜',def:'A thin membrane inside the ear that vibrates with sound and sends signals to the brain',
+   sentence:'Listening to loud music can damage your eardrum over time.',zhSentence:'长时间听高音量音乐会损伤鼓膜。',mnemonic:'鼓膜(gǔ mó) — 鼓 means "drum." The eardrum is literally a tiny drum in your ear that vibrates with sound',book:'anatomy',emoji:'🥁'},
+  {id:161,level:2,word:'Tonsil',ipa:'/ˈtɒnsl/',pos:'n.',zh:'扁桃体',def:'One of two small oval masses of tissue at the back of the throat that help fight infection',
+   sentence:'His tonsils were chronically swollen and the doctor recommended removing them.',zhSentence:'他的扁桃体长期肿大，医生建议切除。',mnemonic:'扁桃体(biǎn táo tǐ) — 扁桃 means "almond." Tonsils are almond-shaped glands at the back of your throat',book:'anatomy',emoji:'🏔️'},
+  {id:162,level:2,word:'Clavicle',ipa:'/ˈklævɪkl/',pos:'n.',zh:'锁骨',def:'The collarbone; the horizontal bone connecting the shoulder to the breastbone',
+   sentence:'She fractured her clavicle when she fell off her bicycle.',zhSentence:'她从自行车上摔下来，锁骨骨折了。',mnemonic:'锁骨(suǒ gǔ) — 锁 means "lock." The clavicle locks your arm to your body at the shoulder',book:'anatomy',emoji:'🔑'},
+  {id:163,level:2,word:'Rib',ipa:'/rɪb/',pos:'n.',zh:'肋骨',def:'One of the curved bones that form a protective cage around your chest organs',
+   sentence:'He cracked two ribs in the car accident.',zhSentence:'他在车祸中肋骨骨折了。',mnemonic:'肋骨(lèi gǔ) — 肋 contains 月(flesh), a body part indicator. Ribs cage your heart and lungs like armor',book:'anatomy',emoji:'🦴'},
+  {id:164,level:2,word:'Femur',ipa:'/ˈfiːmər/',pos:'n.',zh:'股骨',def:'The thigh bone; the longest and strongest bone in the body, from the hip to the knee',
+   sentence:'A broken femur usually requires surgery and months of recovery.',zhSentence:'股骨骨折通常需要手术和数月康复。',mnemonic:'股骨(gǔ gǔ) — 股 means "thigh." The femur is the longest single bone in your body, in your thigh',book:'anatomy',emoji:'🦴'},
+  {id:165,level:2,word:'Trachea',ipa:'/trəˈkiːə/',pos:'n.',zh:'气管',def:'The windpipe; the tube connecting your throat to your lungs that carries air',
+   sentence:'Food going down the wrong pipe blocks the trachea and causes choking.',zhSentence:'食物进入气管会导致窒息。',mnemonic:'气管(qì guǎn) — 气=air, 管=tube. Trachea = air-tube: the pipe that carries air down to your lungs',book:'anatomy',emoji:'🌬️'},
+  {id:166,level:2,word:'Retina',ipa:'/ˈretɪnə/',pos:'n.',zh:'视网膜',def:'The light-sensitive layer at the back of the eye that converts images into nerve signals',
+   sentence:'Diabetes can damage the retina and lead to blindness if untreated.',zhSentence:'糖尿病若不治疗，可能损伤视网膜导致失明。',mnemonic:'视网膜(shì wǎng mó) — 视=vision, 网=net, 膜=membrane. The retina is a visual "net" at the back of the eye',book:'anatomy',emoji:'📸'},
+  // ── ANATOMY LEVEL 3 ADDITIONS ────────────────────────────────────────────
+  {id:167,level:3,word:'Adrenal gland',ipa:'/əˈdriːnəl ɡlænd/',pos:'n.',zh:'肾上腺',def:'Two small glands on top of the kidneys that produce hormones including adrenaline',
+   sentence:'Stress triggers the adrenal glands to release hormones that speed up your heart rate.',zhSentence:'压力会触发肾上腺释放激素，加快心跳。',mnemonic:'肾上腺(shèn shàng xiàn) — 肾=kidney, 上=above. Ad(near)+renal(kidney). Glands sitting above your kidneys',book:'anatomy',emoji:'⚡'},
+  {id:168,level:3,word:'Alveoli',ipa:'/ælˈviːəlaɪ/',pos:'n.',zh:'肺泡',def:'Tiny air sacs at the end of the airways in the lungs where oxygen enters the blood',
+   sentence:'Smoking destroys alveoli, reducing the lungs\' ability to absorb oxygen.',zhSentence:'吸烟会破坏肺泡，降低肺部吸收氧气的能力。',mnemonic:'肺泡(fèi pào) — 泡 means "bubble/sac." Alveoli are tiny bubble-sacs where oxygen and carbon dioxide are exchanged',book:'anatomy',emoji:'🫧'},
+  {id:169,level:3,word:'Cerebellum',ipa:'/ˌserɪˈbeləm/',pos:'n.',zh:'小脑',def:'The part of the brain at the back of the skull that controls balance, coordination, and movement',
+   sentence:'Damage to the cerebellum can cause difficulty with balance and coordinated movement.',zhSentence:'小脑损伤会导致平衡和协调运动困难。',mnemonic:'小脑(xiǎo nǎo) — 小=small. Cerebellum = Latin for "little brain." The small brain at the back that keeps you balanced',book:'anatomy',emoji:'🎯'},
+  {id:170,level:3,word:'Pituitary gland',ipa:'/pɪˈtjuːɪteri ɡlænd/',pos:'n.',zh:'垂体',def:'A pea-sized gland at the base of the brain that controls many other hormone glands',
+   sentence:'A tumor on the pituitary gland can disrupt hormone balance throughout the body.',zhSentence:'垂体上的肿瘤会扰乱全身激素平衡。',mnemonic:'垂体(chuí tǐ) — 垂 means "hanging down." The pituitary hangs below the brain, controlling all other glands like a master switch',book:'anatomy',emoji:'👑'},
+  {id:171,level:3,word:'Bronchus',ipa:'/ˈbrɒŋkəs/',pos:'n.',zh:'支气管',def:'One of the two main airways that branch from the trachea and carry air into the lungs',
+   sentence:'Asthma causes the bronchi to narrow, making breathing difficult.',zhSentence:'哮喘导致支气管变窄，使呼吸困难。',mnemonic:'支气管(zhī qì guǎn) — 支=branch, 气=air, 管=tube. Branching air-tubes that go from the windpipe into the lungs',book:'anatomy',emoji:'🌿'},
+  // ── CARDIOLOGY ADDITIONS ─────────────────────────────────────────────────
+  {id:172,level:1,word:'Heart rate',ipa:'/hɑːrt reɪt/',pos:'n.',zh:'心率',def:'The number of times your heart beats per minute',
+   sentence:'A normal resting heart rate for adults is between 60 and 100 beats per minute.',zhSentence:'成年人正常静息心率为每分钟60至100次。',mnemonic:'心率(xīn lǜ) — 心=heart, 率=rate. Heart rate tells how fast your heart is working at any moment',book:'cardiology',emoji:'💓'},
+  {id:173,level:1,word:'Valve',ipa:'/vælv/',pos:'n.',zh:'心脏瓣膜',def:'A flap of tissue in the heart that keeps blood flowing in one direction only',
+   sentence:'A damaged heart valve may need to be repaired or replaced with surgery.',zhSentence:'损坏的心脏瓣膜可能需要手术修复或更换。',mnemonic:'瓣膜(bàn mó) — 瓣 means "petal/flap." Heart valves are like petals that open and close to direct blood flow',book:'cardiology',emoji:'🚪'},
+  {id:174,level:1,word:'Ventricle',ipa:'/ˈventrɪkl/',pos:'n.',zh:'心室',def:'One of the two lower chambers of the heart that pump blood out to the lungs and body',
+   sentence:'The left ventricle is the most powerful chamber, pumping blood to the entire body.',zhSentence:'左心室是最强有力的腔室，将血液泵送到全身。',mnemonic:'心室(xīn shì) — 室=room/chamber. Ventricle = Latin for "little belly." The lower pumping rooms of the heart',book:'cardiology',emoji:'🏠'},
+  {id:175,level:1,word:'Atrium',ipa:'/ˈeɪtriəm/',pos:'n.',zh:'心房',def:'One of the two upper chambers of the heart that receive blood coming in',
+   sentence:'Blood flows from the right atrium into the right ventricle before going to the lungs.',zhSentence:'血液从右心房流入右心室，然后流向肺部。',mnemonic:'心房(xīn fáng) — 房 also means "room." The atria are the upper receiving rooms of the heart',book:'cardiology',emoji:'🏛️'},
+  {id:176,level:2,word:'Aneurysm',ipa:'/ˈænjʊrɪzəm/',pos:'n.',zh:'动脉瘤',def:'A dangerous bulge or balloon-like swelling in the wall of a blood vessel that can rupture',
+   sentence:'She was rushed into emergency surgery when her brain aneurysm ruptured.',zhSentence:'脑动脉瘤破裂后，她被紧急送去手术。',mnemonic:'动脉瘤(dòng mài liú) — 瘤=lump/growth. An aneurysm is a dangerous bulging lump in a blood vessel wall',book:'cardiology',emoji:'💥'},
+  {id:177,level:2,word:'Embolism',ipa:'/ˈembəlɪzəm/',pos:'n.',zh:'栓塞',def:'A sudden blockage in a blood vessel caused by a clot or material that has traveled through the blood',
+   sentence:'She developed a pulmonary embolism — a dangerous blood clot lodged in her lung.',zhSentence:'她患上了肺栓塞——一种危险的肺部血凝块。',mnemonic:'栓塞(shuān sè) — 栓=stopper, 塞=plug. An embolism plugs up a vessel like a cork suddenly blocking a pipe',book:'cardiology',emoji:'🚧'},
+  {id:178,level:2,word:'Heart failure',ipa:'/hɑːrt ˈfeɪljər/',pos:'n.',zh:'心力衰竭',def:'A condition where the heart cannot pump blood effectively enough to meet the body\'s needs',
+   sentence:'She was admitted to hospital for acute heart failure and put on oxygen.',zhSentence:'她因急性心力衰竭入院并接受氧气治疗。',mnemonic:'心力衰竭(xīn lì shuāi jié) — 衰竭 means "exhausted/failing." The heart loses the strength to pump effectively',book:'cardiology',emoji:'💔'},
+  {id:179,level:2,word:'Cardiomyopathy',ipa:'/ˌkɑːdiəʊmaɪˈɒpəθi/',pos:'n.',zh:'心肌病',def:'Disease of the heart muscle that makes it harder for the heart to pump blood properly',
+   sentence:'His cardiomyopathy was diagnosed after he fainted during exercise.',zhSentence:'他在运动中晕倒后被诊断为心肌病。',mnemonic:'心肌病(xīn jī bìng) — 心=heart, 肌=muscle, 病=disease. Cardio=heart, myo=muscle, pathy=disease',book:'cardiology',emoji:'🫀'},
+  {id:180,level:3,word:'Angioplasty',ipa:'/ˈændʒiəʊplæsti/',pos:'n.',zh:'血管成形术',def:'A procedure to widen narrowed or blocked arteries, usually using a small inflatable balloon',
+   sentence:'He had a coronary angioplasty to open the blocked artery in his heart.',zhSentence:'他接受了冠状动脉血管成形术来疏通心脏中堵塞的动脉。',mnemonic:'血管成形术(xuè guǎn chéng xíng shù) — Angio=vessel, plasty=reshaping. Widening a narrowed vessel to restore blood flow',book:'cardiology',emoji:'🎈'},
+  {id:181,level:3,word:'Cardiac arrest',ipa:'/ˈkɑːdiæk əˈrest/',pos:'n.',zh:'心脏骤停',def:'When the heart suddenly stops beating; requires immediate CPR and defibrillation to survive',
+   sentence:'He went into cardiac arrest and was saved by a bystander who performed CPR.',zhSentence:'他心脏骤停，被旁观者做CPR救了回来。',mnemonic:'心脏骤停(xīn zàng zhòu tíng) — 骤停=sudden stop. The heart\'s electrical system fails and it stops completely. Call for help fast',book:'cardiology',emoji:'⛔'},
+  {id:182,level:3,word:'Echocardiogram',ipa:'/ˌekəʊˈkɑːdiəɡræm/',pos:'n.',zh:'超声心动图',def:'An ultrasound of the heart that shows its structure and how well it is pumping',
+   sentence:'The echocardiogram showed that his heart valves were working normally.',zhSentence:'超声心动图显示他的心脏瓣膜功能正常。',mnemonic:'超声心动图(chāo shēng xīn dòng tú) — Echo=sound waves, cardio=heart, gram=image. Sound waves create a live picture of the beating heart',book:'cardiology',emoji:'🔊'},
+  // ── CLINIC COMMUNICATION ADDITIONS ──────────────────────────────────────
+  {id:183,level:1,word:'Checkup',ipa:'/ˈtʃekʌp/',pos:'n.',zh:'体检',def:'A routine medical examination to assess your overall health',
+   sentence:'She went in for her annual checkup and got a clean bill of health.',zhSentence:'她去做了年度体检，健康状况良好。',mnemonic:'体检(tǐ jiǎn) — 体=body, 检=check. A checkup is literally a full body check',book:'clinic',emoji:'✅'},
+  {id:184,level:1,word:'Ward',ipa:'/wɔːd/',pos:'n.',zh:'病房',def:'A room or section in a hospital where patients stay during treatment',
+   sentence:'He was moved to the cardiac ward after his heart surgery.',zhSentence:'心脏手术后，他被转入心脏科病房。',mnemonic:'病房(bìng fáng) — 病=illness, 房=room. A ward is literally the illness room in a hospital',book:'clinic',emoji:'🏥'},
+  {id:185,level:1,word:'Bed rest',ipa:'/bed rest/',pos:'n.',zh:'卧床休息',def:'A period of staying in bed as prescribed by a doctor for recovery',
+   sentence:'The doctor ordered two weeks of bed rest after her surgery.',zhSentence:'医生要求她手术后卧床休息两周。',mnemonic:'卧床休息(wò chuáng xiū xi) — 卧=lie down, 床=bed. Doctor\'s orders to rest in bed and let your body heal',book:'clinic',emoji:'🛏️'},
+  {id:186,level:1,word:'Recovery',ipa:'/rɪˈkʌvəri/',pos:'n.',zh:'康复',def:'The process of returning to good health after an illness, injury, or surgery',
+   sentence:'His recovery after the knee operation took about three months.',zhSentence:'他膝盖手术后的康复大约花了三个月。',mnemonic:'康复(kāng fù) — 康=health, 复=return. Recovery is returning to health after illness',book:'clinic',emoji:'🌱'},
+  {id:187,level:2,word:'Specialist',ipa:'/ˈspeʃəlɪst/',pos:'n.',zh:'专科医生',def:'A doctor who has advanced training in one specific area of medicine',
+   sentence:'Her GP referred her to a dermatologist, a specialist in skin conditions.',zhSentence:'她的全科医生将她转介给皮肤科专科医生。',mnemonic:'专科医生(zhuān kē yī shēng) — 专科=specialty. A specialist focuses deep on one area of medicine',book:'clinic',emoji:'🎓'},
+  {id:188,level:2,word:'Rehabilitation',ipa:'/ˌriːhəˌbɪlɪˈteɪʃən/',pos:'n.',zh:'康复治疗',def:'Therapy and exercises to help regain strength or abilities after illness or injury',
+   sentence:'After his stroke, he attended daily rehabilitation sessions to relearn how to walk.',zhSentence:'中风后，他每天参加康复治疗，重新学习行走。',mnemonic:'康复治疗(kāng fù zhì liáo) — Rehab = re+habilis (able again). Training your body to regain lost abilities',book:'clinic',emoji:'🏋️'},
+  {id:189,level:2,word:'Intensive care',ipa:'/ɪnˈtensɪv keər/',pos:'n.',zh:'重症监护',def:'A hospital unit that provides constant monitoring for the most critically ill patients',
+   sentence:'She was moved to intensive care after her condition suddenly worsened.',zhSentence:'她的病情突然恶化后被转入重症监护病房。',mnemonic:'重症监护(zhòng zhèng jiān hù) — 重症=serious illness, 监护=monitor & care. 24-hour non-stop care for the most critical patients',book:'clinic',emoji:'📊'},
+  {id:190,level:2,word:'Pathology',ipa:'/pəˈθɒlədʒi/',pos:'n.',zh:'病理学',def:'The study of disease through examination of body tissue and fluids in a laboratory',
+   sentence:'The pathology report confirmed the mass was cancerous.',zhSentence:'病理报告确认该肿块为恶性。',mnemonic:'病理学(bìng lǐ xué) — 病=disease, 理=study. Pathos=suffering, logos=study. The science of understanding disease',book:'clinic',emoji:'🔬'},
+  {id:191,level:3,word:'Resuscitation',ipa:'/rɪˌsʌsɪˈteɪʃən/',pos:'n.',zh:'复苏',def:'Emergency procedures to restart breathing and blood circulation in someone who has stopped',
+   sentence:'The nurse performed cardiopulmonary resuscitation until the ambulance arrived.',zhSentence:'护士一直进行心肺复苏，直到救护车到来。',mnemonic:'复苏(fù sū) — 复=return, 苏=revive. CPR is the most common resuscitation technique — pushing the heart to beat again',book:'clinic',emoji:'💓'},
+  {id:192,level:3,word:'Intubation',ipa:'/ˌɪntjʊˈbeɪʃən/',pos:'n.',zh:'气管插管',def:'Inserting a tube into the trachea to help a patient breathe, used in emergencies or surgery',
+   sentence:'The anesthesiologist performed intubation before the patient was put under general anesthesia.',zhSentence:'全身麻醉前，麻醉科医生进行了气管插管。',mnemonic:'气管插管(qì guǎn chā guǎn) — 插=insert, 管=tube. Intubation = putting a tube IN the airway (in + tube + -ation)',book:'clinic',emoji:'🔧'},
+  {id:193,level:3,word:'Palliative care',ipa:'/ˈpæliətɪv keər/',pos:'n.',zh:'姑息治疗',def:'Specialized care focused on relieving pain and improving quality of life for patients with serious illness',
+   sentence:'After the cancer spread too far, the family chose palliative care over further treatment.',zhSentence:'癌症扩散过广后，家人选择了姑息治疗，而非进一步治疗。',mnemonic:'姑息治疗(gū xi zhì liáo) — 姑息 means "to ease temporarily." Palliative = to ease. Comfort and dignity over cure',book:'clinic',emoji:'🕊️'},
+  // ── PHARMACOLOGY ADDITIONS ───────────────────────────────────────────────
+  {id:194,level:1,word:'Eye drops',ipa:'/aɪ drɒps/',pos:'n.',zh:'眼药水',def:'Liquid medicine applied directly to the eyes to treat infections, dryness, or pressure',
+   sentence:'He used antibiotic eye drops three times a day to clear the eye infection.',zhSentence:'他每天使用三次抗生素眼药水来清除眼部感染。',mnemonic:'眼药水(yǎn yào shuǐ) — 眼=eye, 药=medicine, 水=water. Eye medicine water — delivered one drop at a time',book:'pharma',emoji:'💧'},
+  {id:195,level:1,word:'Patch',ipa:'/pætʃ/',pos:'n.',zh:'贴片',def:'A medicated adhesive strip placed on the skin to deliver medicine slowly through the skin',
+   sentence:'She used a nicotine patch on her arm to help her quit smoking.',zhSentence:'她在手臂上贴了尼古丁贴片来戒烟。',mnemonic:'贴片(tiē piàn) — 贴=stick/patch, 片=flat piece. A sticky flat piece on skin that slowly releases medicine',book:'pharma',emoji:'🩹'},
+  {id:196,level:1,word:'Ointment',ipa:'/ˈɔɪntmənt/',pos:'n.',zh:'软膏',def:'A thick, oil-based medication applied directly to the skin to treat rashes, wounds, or infections',
+   sentence:'The doctor prescribed an antibiotic ointment for the infected cut on his hand.',zhSentence:'医生给他开了抗生素软膏，用于手上感染的切口。',mnemonic:'软膏(ruǎn gāo) — 软=soft, 膏=paste. A soft oily paste rubbed onto skin. Oint = Latin "unguentum" (anoint)',book:'pharma',emoji:'🫙'},
+  {id:197,level:1,word:'Nasal spray',ipa:'/ˈneɪzl spreɪ/',pos:'n.',zh:'鼻腔喷雾',def:'Medicine delivered as a fine mist sprayed directly into the nose',
+   sentence:'She used a saline nasal spray to relieve her blocked nose.',zhSentence:'她使用生理盐水鼻腔喷雾来缓解鼻塞。',mnemonic:'鼻腔喷雾(bí qiāng pēn wù) — 鼻=nose, 喷雾=spray mist. Medicine in a spray mist form aimed right at the nasal passage',book:'pharma',emoji:'💨'},
+  {id:198,level:2,word:'Antidepressant',ipa:'/ˌæntidrɪˈpresənt/',pos:'n.',zh:'抗抑郁药',def:'A medicine that treats depression by balancing chemical levels in the brain',
+   sentence:'Her doctor prescribed an antidepressant and recommended therapy alongside it.',zhSentence:'医生给她开了抗抑郁药，同时建议她接受心理治疗。',mnemonic:'抗抑郁药(kàng yì yù yào) — 抗=anti, 抑郁=depression. Anti + depress + ant = fights the brain chemical imbalance of depression',book:'pharma',emoji:'🌤️'},
+  {id:199,level:2,word:'Beta-blocker',ipa:'/ˈbeɪtə blɒkər/',pos:'n.',zh:'β受体阻滞剂',def:'A medicine that slows heart rate and lowers blood pressure by blocking adrenaline receptors',
+   sentence:'His cardiologist prescribed a beta-blocker to control his fast heart rate.',zhSentence:'心脏科医生开了β受体阻滞剂来控制他的心跳过速。',mnemonic:'β受体阻滞剂 — Beta-blockers block β-adrenergic receptors that normally speed the heart and raise pressure',book:'pharma',emoji:'🛑'},
+  {id:200,level:2,word:'Sedative',ipa:'/ˈsedətɪv/',pos:'n.',zh:'镇静剂',def:'A medicine that calms the nervous system and causes relaxation or drowsiness',
+   sentence:'The doctor gave her a mild sedative before the procedure to help her relax.',zhSentence:'医生在手术前给她服用了温和的镇静剂来帮助她放松。',mnemonic:'镇静剂(zhèn jìng jì) — 镇=calm, 静=quiet. Sedate = to calm. A sedative quiets your nervous system',book:'pharma',emoji:'😴'},
+  {id:201,level:2,word:'Analgesic',ipa:'/ˌænəlˈdʒiːzɪk/',pos:'n.',zh:'镇痛药',def:'Any medicine that relieves pain without causing unconsciousness',
+   sentence:'Aspirin is one of the most widely used analgesics worldwide.',zhSentence:'阿司匹林是全球最常用的镇痛药之一。',mnemonic:'镇痛药(zhèn tòng yào) — 镇=suppress, 痛=pain. An-(without) + algesia(pain sensation). Kills pain without knocking you out',book:'pharma',emoji:'💊'},
+  {id:202,level:3,word:'Immunosuppressant',ipa:'/ˌɪmjʊnəʊsəˈpresənt/',pos:'n.',zh:'免疫抑制剂',def:'A drug that weakens the immune system, used after transplants or for autoimmune diseases',
+   sentence:'Organ transplant patients take immunosuppressants daily to prevent rejection.',zhSentence:'器官移植患者每天服用免疫抑制剂以防止排斥反应。',mnemonic:'免疫抑制剂(miǎn yì yì zhì jì) — 免疫=immune, 抑制=suppress. Keeps immune system from attacking transplanted organs',book:'pharma',emoji:'🛡️'},
+  {id:203,level:3,word:'Chemotherapy',ipa:'/ˌkiːməʊˈθerəpi/',pos:'n.',zh:'化学治疗',def:'A cancer treatment using powerful drugs to kill or stop the growth of fast-dividing cancer cells',
+   sentence:'She underwent six months of chemotherapy to treat her breast cancer.',zhSentence:'她接受了六个月的化学治疗来治疗乳腺癌。',mnemonic:'化疗(huà liáo) — 化=chemical, 疗=therapy. Chemo = chemical + therapy. Powerful chemicals targeting rapidly-dividing cancer cells',book:'pharma',emoji:'⚗️'},
+  {id:204,level:3,word:'Contraceptive',ipa:'/ˌkɒntrəˈseptɪv/',pos:'n.',zh:'避孕药',def:'A medicine or device used to prevent pregnancy',
+   sentence:'The doctor discussed different contraceptive options during the appointment.',zhSentence:'医生在就诊时与她讨论了不同的避孕方法。',mnemonic:'避孕药(bì yùn yào) — 避=prevent, 孕=pregnancy. Contra=against, concep=conceive. Against conception',book:'pharma',emoji:'🔒'},
 ];
 
 const BOOKS=[
-  {id:'anatomy',   title:'Human Anatomy',        zhTitle:'人体解剖学',count:412,color:'#7FD1AE',progress:.62},
-  {id:'cardiology',title:'Cardiology',            zhTitle:'心脏病学',  count:238,color:'#E8896B',progress:.24},
-  {id:'clinic',    title:'Clinic Communication', zhTitle:'诊所沟通',  count:120,color:'#E5B769',progress:.85},
-  {id:'pharma',    title:'Pharmacology 101',      zhTitle:'基础药理学',count:320,color:'#7BB0D6',progress:.10},
-];
-
-const REVIEW_ITEMS=[
-  {word:'Cardiac',     zh:'心脏的',stage:2,dueIn:'5 min', urgent:true},
-  {word:'Hypertension',zh:'高血压',stage:3,dueIn:'28 min',urgent:true},
-  {word:'Pulmonary',   zh:'肺部的',stage:4,dueIn:'1 h',   urgent:false},
-  {word:'Fracture',    zh:'骨折',  stage:5,dueIn:'7 h',   urgent:false},
-  {word:'Diagnose',    zh:'诊断',  stage:6,dueIn:'23 h',  urgent:false},
-  {word:'Prescription',zh:'处方',  stage:7,dueIn:'2 d',   urgent:false},
+  {id:'anatomy',   title:'Human Anatomy',        zhTitle:'人体解剖学',count:71, color:'#7FD1AE',progress:.62},
+  {id:'cardiology',title:'Cardiology',            zhTitle:'心脏病学',  count:31, color:'#E8896B',progress:.24},
+  {id:'clinic',    title:'Clinic Communication', zhTitle:'诊所沟通',  count:63, color:'#E5B769',progress:.85},
+  {id:'pharma',    title:'Pharmacology 101',      zhTitle:'基础药理学',count:39, color:'#7BB0D6',progress:.10},
 ];
 
 const BODY_PARTS={
-  head:   {label:'Head',   zh:'头部',emoji:'🧠',symptoms:['Throbbing headache','Dizziness','Blurred vision','Nausea','Sensitivity to light']},
-  throat: {label:'Throat', zh:'喉咙',emoji:'🗣️',symptoms:['Sore throat','Difficulty swallowing','Hoarseness','Dry cough']},
-  chest:  {label:'Chest',  zh:'胸部',emoji:'❤️',symptoms:['Sharp pain','Dull ache','Tightness','Burning sensation','Shortness of breath','Palpitations']},
-  abdomen:{label:'Abdomen',zh:'腹部',emoji:'🫃',symptoms:['Cramping','Bloating','Nausea','Loss of appetite','Diarrhea']},
-  back:   {label:'Back',   zh:'背部',emoji:'🔙',symptoms:['Lower back pain','Stiffness','Radiating pain','Muscle spasm']},
-  arm:    {label:'Arm',    zh:'手臂',emoji:'💪',symptoms:['Numbness','Tingling','Weakness','Joint pain']},
-  leg:    {label:'Leg',    zh:'腿部',emoji:'🦵',symptoms:['Swelling','Cramping','Numbness','Limited range of motion']},
+  head:     {label:'Head',      zh:'头部',   emoji:'🧠',symptoms:['Throbbing headache','Dull headache','Dizziness','Blurred vision','Nausea','Sensitivity to light','Ringing in ears','Facial numbness','Sudden severe headache','Fainting','Confusion','Memory loss']},
+  eyes:     {label:'Eyes',      zh:'眼睛',   emoji:'👁️',symptoms:['Eye pain','Red eyes','Blurred vision','Double vision','Sensitivity to light','Watery eyes','Dry eyes','Itchy eyes','Eye discharge','Swollen eyelids']},
+  throat:   {label:'Throat',    zh:'喉咙',   emoji:'🗣️',symptoms:['Sore throat','Difficulty swallowing','Hoarseness','Dry cough','Wet cough','Coughing up blood','Swollen glands','Loss of voice','Throat tightness','Bad breath']},
+  chest:    {label:'Chest',     zh:'胸部',   emoji:'❤️',symptoms:['Sharp pain','Dull ache','Tightness','Burning sensation','Shortness of breath','Palpitations','Rapid heartbeat','Pain spreading to arm','Chest pressure','Wheezing','Coughing at night']},
+  abdomen:  {label:'Abdomen',   zh:'腹部',   emoji:'🫃',symptoms:['Cramping','Bloating','Nausea','Vomiting','Loss of appetite','Diarrhea','Constipation','Blood in stool','Sharp pain after eating','Heartburn','Acid reflux','Stomach gurgling','Hemorrhoids pain','Rectal bleeding','Itching around rectum']},
+  digestive:{label:'Digestive', zh:'消化系统',emoji:'🔄',symptoms:['Indigestion','Bloating','Gas/Flatulence','Nausea','Heartburn','Acid reflux','Constipation','Diarrhea','Blood in stool','Hemorrhoids','Stomach cramps','Loss of appetite','Difficulty digesting','Dark/Tarry stool','Abdominal pain']},
+  back:     {label:'Back',      zh:'背部',   emoji:'🔙',symptoms:['Lower back pain','Upper back pain','Stiffness','Radiating pain to leg','Muscle spasm','Pain when bending','Numbness in legs','Sharp stabbing pain','Pain when sitting','Pain when standing up']},
+  arm:      {label:'Arm',       zh:'手臂',   emoji:'💪',symptoms:['Numbness','Tingling','Weakness','Joint pain','Swelling','Bruising','Limited movement','Pain when lifting','Wrist pain','Shoulder pain','Elbow pain','Cold fingers']},
+  leg:      {label:'Leg',       zh:'腿部',   emoji:'🦵',symptoms:['Swelling','Cramping','Numbness','Limited range of motion','Knee pain','Hip pain','Ankle pain','Pain when walking','Muscle weakness','Varicose veins','Calf tenderness','Cold feet']},
+  skin:     {label:'Skin',      zh:'皮肤',   emoji:'🖐️',symptoms:['Rash','Itching','Redness','Bruising','Peeling skin','Dry patches','Blisters','Hives','Yellowing skin','Unusual moles','Wound not healing']},
+  general:  {label:'General',   zh:'全身',   emoji:'🌡️',symptoms:['Fever','Chills','Fatigue','Night sweats','Unexplained weight loss','Loss of appetite','General weakness','Swollen lymph nodes','Persistent cough','Difficulty sleeping','Excessive thirst','Frequent urination']},
 };
 
 const ZH_SYM={
-  'Sharp pain':'刺痛','Dull ache':'隐痛','Tightness':'发紧','Burning sensation':'灼热感',
-  'Shortness of breath':'呼吸困难','Palpitations':'心悸','Throbbing headache':'跳痛性头痛',
-  'Dizziness':'头晕','Blurred vision':'视力模糊','Nausea':'恶心','Sensitivity to light':'怕光',
-  'Sore throat':'喉咙痛','Difficulty swallowing':'吞咽困难','Hoarseness':'声音嘶哑','Dry cough':'干咳',
-  'Cramping':'痉挛','Bloating':'腹胀','Loss of appetite':'食欲不振','Diarrhea':'腹泻',
-  'Lower back pain':'腰痛','Stiffness':'僵硬','Radiating pain':'放射性疼痛','Muscle spasm':'肌肉痉挛',
+  'Sharp pain':'刺痛','Dull ache':'隐痛','Dull headache':'隐性头痛','Tightness':'发紧','Burning sensation':'灼热感',
+  'Shortness of breath':'呼吸困难','Palpitations':'心悸','Rapid heartbeat':'心跳加速',
+  'Pain spreading to arm':'痛放射至手臂','Chest pressure':'胸部压迫感','Wheezing':'喘鸣','Coughing at night':'夜间咳嗽',
+  'Throbbing headache':'跳痛性头痛','Dizziness':'头晕','Blurred vision':'视力模糊','Nausea':'恶心',
+  'Sensitivity to light':'怕光','Ringing in ears':'耳鸣','Facial numbness':'面部麻木',
+  'Sudden severe headache':'突发剧烈头痛','Fainting':'晕厥','Confusion':'神志不清','Memory loss':'记忆力减退',
+  'Eye pain':'眼睛疼痛','Red eyes':'眼睛发红','Double vision':'复视','Watery eyes':'流泪',
+  'Dry eyes':'眼干','Itchy eyes':'眼痒','Eye discharge':'眼睛分泌物','Swollen eyelids':'眼皮浮肿',
+  'Sore throat':'喉咙痛','Difficulty swallowing':'吞咽困难','Hoarseness':'声音嘶哑',
+  'Dry cough':'干咳','Wet cough':'有痰咳嗽','Coughing up blood':'咳血',
+  'Swollen glands':'腺体肿大','Loss of voice':'失声','Throat tightness':'喉咙发紧','Bad breath':'口臭',
+  'Cramping':'痉挛','Bloating':'腹胀','Vomiting':'呕吐','Loss of appetite':'食欲不振','Diarrhea':'腹泻',
+  'Constipation':'便秘','Blood in stool':'大便带血','Sharp pain after eating':'饭后剧痛',
+  'Heartburn':'胃灼热','Acid reflux':'反酸','Stomach gurgling':'肠鸣',
+  'Lower back pain':'腰痛','Upper back pain':'上背痛','Stiffness':'僵硬',
+  'Radiating pain to leg':'疼痛放射至腿部','Muscle spasm':'肌肉痉挛','Pain when bending':'弯腰时疼痛',
+  'Numbness in legs':'腿部麻木','Sharp stabbing pain':'刀刺样疼痛',
+  'Pain when sitting':'久坐时疼痛','Pain when standing up':'站起时疼痛',
   'Numbness':'麻木','Tingling':'刺痛感','Weakness':'无力','Joint pain':'关节痛',
-  'Swelling':'肿胀','Limited range of motion':'活动范围受限',
+  'Swelling':'肿胀','Bruising':'淤伤','Limited movement':'活动受限',
+  'Pain when lifting':'上举时疼痛','Wrist pain':'手腕痛','Shoulder pain':'肩痛',
+  'Elbow pain':'肘部疼痛','Cold fingers':'手指发冷',
+  'Limited range of motion':'活动范围受限','Knee pain':'膝盖痛','Hip pain':'髋部痛',
+  'Ankle pain':'踝关节痛','Pain when walking':'行走时疼痛','Muscle weakness':'肌肉无力',
+  'Varicose veins':'静脉曲张','Calf tenderness':'小腿压痛','Cold feet':'脚部发冷',
+  'Rash':'皮疹','Itching':'瘙痒','Redness':'发红','Peeling skin':'皮肤脱落',
+  'Dry patches':'干燥斑块','Blisters':'水疱','Hives':'荨麻疹',
+  'Yellowing skin':'皮肤黄染','Unusual moles':'异常痣','Wound not healing':'伤口不愈合',
+  'Fever':'发烧','Chills':'畏寒','Fatigue':'疲劳','Night sweats':'盗汗',
+  'Unexplained weight loss':'不明原因体重减轻','General weakness':'全身乏力',
+  'Swollen lymph nodes':'淋巴结肿大','Persistent cough':'持续咳嗽',
+  'Difficulty sleeping':'失眠','Excessive thirst':'极度口渴','Frequent urination':'尿频',
+  'Hemorrhoids pain':'痔疮疼痛','Rectal bleeding':'直肠出血','Itching around rectum':'肛周瘙痒',
+  'Hemorrhoids':'痔疮','Indigestion':'消化不良','Gas/Flatulence':'腹胀/排气',
+  'Stomach cramps':'胃痉挛','Difficulty digesting':'消化困难','Dark/Tarry stool':'黑便/柏油样便',
+  'Abdominal pain':'腹痛',
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -407,17 +708,21 @@ const ZH_SYM={
 ══════════════════════════════════════════════════════════════════════════ */
 const S={
   screen:'login',
+  currentBook:null,
   cardIdx:0, cardFlipped:false,
   quizMode:'mc', quizIdx:0, quizPicked:null, quizSpelled:'',
   quizOptions:null, quizCorrect:0, quizOptionsFor:-1, quizScore:120,
   doctorPart:'chest', doctorSelected:new Set(), doctorDuration:'2 days',
   accent:'mint', tweaksOpen:false,
+  reviewSession:[], reviewIdx:0, reviewFlipped:false, reviewDone:false, reviewKnow:0,
+  addSearch:'', addShowForm:false, addWord:'', addZh:'', addDef:'', addBookFilter:'All',
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════════════════════════════════════ */
 function go(sc){S.screen=sc;S.cardFlipped=false;render()}
+function currentVocab(){return S.currentBook?VOCAB.filter(x=>x.book===S.currentBook):VOCAB;}
 
 function applyAccent(key){
   const c=ACCENT_COLORS[key];const r=document.documentElement.style;
@@ -451,6 +756,25 @@ function doctorSentence(){
   };
 }
 
+/* ── SRS / localStorage helpers ─────────────────────────────────────────── */
+const STAGE_MS=[60000,600000,3600000,28800000,86400000,259200000,604800000,1209600000];
+function loadRD(){try{return JSON.parse(localStorage.getItem('mp_rv')||'{}');}catch{return{};}}
+function saveRD(d){try{localStorage.setItem('mp_rv',JSON.stringify(d));}catch{}}
+function loadCV(){try{return JSON.parse(localStorage.getItem('mp_cv')||'[]');}catch{return[];}}
+function saveCV(v){try{localStorage.setItem('mp_cv',JSON.stringify(v));}catch{}}
+function allVocab(){return[...VOCAB,...loadCV()];}
+function markWord(id,know){
+  const rd=loadRD();
+  const cur=rd[id]||{stage:0};
+  const ns=know?Math.min(cur.stage+1,STAGE_MS.length-1):0;
+  rd[id]={stage:ns,nextDue:Date.now()+STAGE_MS[ns]};
+  saveRD(rd);
+}
+function startReview(words){
+  S.reviewSession=words.map(w=>w.id);
+  S.reviewIdx=0;S.reviewFlipped=false;S.reviewDone=false;S.reviewKnow=0;
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    SVG ICONS
 ══════════════════════════════════════════════════════════════════════════ */
@@ -476,6 +800,9 @@ function ic(name,size=20,color='currentColor',sw=1.8){
     headphones:`<path d="M3 15v-3a9 9 0 0118 0v3"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/>`,
     award:`<circle cx="12" cy="9" r="6"/><path d="M9 14l-2 7 5-2 5 2-2-7"/>`,
     mail:`<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>`,
+    search:`<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>`,
+    plus:`<path d="M12 5v14M5 12h14"/>`,
+    check:`<path d="M20 6L9 17l-5-5"/>`,
   };
   return`<svg ${a}>${p[name]||''}</svg>`;
 }
@@ -501,12 +828,13 @@ function tabbar(active){
     {id:'learn', label:'Learn',  icon:'book'},
     {id:'review',label:'Review', icon:'clock'},
     {id:'quiz',  label:'Quiz',   icon:'target'},
+    {id:'words', label:'Words',  icon:'search'},
     {id:'me',    label:'Me',     icon:'user'},
   ];
   return`<div class="tabbar">${tabs.map(t=>{
     const on=t.id===active;
     return`<button class="tab-btn" data-go="${t.id}">
-      ${ic(t.icon,22,on?'var(--accent)':'var(--ink-4)',on?2.2:1.8)}
+      ${ic(t.icon,20,on?'var(--accent)':'var(--ink-4)',on?2.2:1.8)}
       <span class="tab-label" style="color:${on?'var(--accent)':'var(--ink-4)'};font-weight:${on?700:500}">${t.label}</span>
     </button>`;
   }).join('')}</div>`;
@@ -588,7 +916,7 @@ function homeScreen(){
         <button style="border:none;background:transparent;cursor:pointer;font-size:13px;color:var(--ink-3)">See all →</button>
       </div>
       <div style="display:flex;flex-direction:column;gap:11px">
-        ${BOOKS.map(b=>`<button class="btn card" data-go="learn" style="padding:14px 16px;gap:14px;text-align:left;justify-content:flex-start">
+        ${BOOKS.map(b=>`<button class="btn card" data-go="learn" data-book="${b.id}" style="padding:14px 16px;gap:14px;text-align:left;justify-content:flex-start">
           <div style="width:48px;height:48px;border-radius:13px;background:${b.color}22;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ic('book',22,b.color)}</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px">${b.title}</div>
@@ -612,16 +940,19 @@ function homeScreen(){
 }
 
 function learnScreen(){
-  const v=VOCAB[S.cardIdx];
-  const total=VOCAB.length;
+  const vocab=currentVocab();
+  if(S.cardIdx>=vocab.length)S.cardIdx=0;
+  const v=vocab[S.cardIdx];
+  const total=vocab.length;
   const pct=((S.cardIdx+1)/total*100).toFixed(1);
+  const bookInfo=S.currentBook?BOOKS.find(b=>b.id===S.currentBook):null;
   return`<div class="screen" style="background:var(--beige)">
     ${sbar()}
     <div style="padding:0 20px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0">
       <button class="btn-icon btn" data-go="home">${ic('back',18,'var(--ink)')}</button>
       <div style="flex:1;text-align:center">
-        <div style="font-size:13px;font-weight:700;color:var(--ink)">Medical Vocabulary · 医学词汇</div>
-        <div style="font-size:11px;color:var(--ink-3)">${BOOKS.find(b=>b.id===v.book)?.title||'All Books'}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink)">${bookInfo?bookInfo.title:'Medical Vocabulary · 医学词汇'}</div>
+        <div style="font-size:11px;color:var(--ink-3)">${bookInfo?bookInfo.zhTitle+' · '+total+' words':'All Books · '+total+' words'}</div>
       </div>
       <button class="btn-icon btn" data-action="shuffle">${ic('shuffle',17,'var(--ink-3)')}</button>
     </div>
@@ -665,7 +996,7 @@ function learnScreen(){
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
         <button class="btn btn-ghost" data-action="prev-card" ${S.cardIdx===0?'disabled':''} style="width:50px;height:50px;border-radius:15px;opacity:${S.cardIdx===0?.4:1}">${ic('back',20,'var(--ink)')}</button>
         <button class="btn btn-primary" data-action="know" style="padding:12px 22px;font-size:14px">Know it · 认识了 ✓</button>
-        <button class="btn btn-ghost" data-action="next-card" ${S.cardIdx===VOCAB.length-1?'disabled':''} style="width:50px;height:50px;border-radius:15px;opacity:${S.cardIdx===VOCAB.length-1?.4:1}">${ic('arrow',20,'var(--ink)')}</button>
+        <button class="btn btn-ghost" data-action="next-card" ${S.cardIdx===total-1?'disabled':''} style="width:50px;height:50px;border-radius:15px;opacity:${S.cardIdx===total-1?.4:1}">${ic('arrow',20,'var(--ink)')}</button>
       </div>
     </div>
     <div style="height:14px;flex-shrink:0"></div>
@@ -674,20 +1005,82 @@ function learnScreen(){
 }
 
 function reviewScreen(){
-  const stages=['5m','30m','1h','8h','24h','2d','4d','7d'];
-  const ys=[5,8,14,30,48,60,68,73];
-  const W=280,H=80;
+  // ── In-session card view ──────────────────────────────────────────────────
+  if(S.reviewSession.length&&S.reviewIdx<S.reviewSession.length){
+    const av=allVocab();
+    const w=av.find(x=>x.id===S.reviewSession[S.reviewIdx]);
+    if(!w){S.reviewDone=true;render();return'';}
+    const pct=Math.round((S.reviewIdx/S.reviewSession.length)*100);
+    return`<div class="screen" style="background:var(--beige)">
+      ${sbar()}
+      <div style="padding:0 20px 10px;flex-shrink:0;display:flex;align-items:center;gap:12px">
+        <button class="btn-icon btn" data-action="end-review">${ic('back',18,'var(--ink)')}</button>
+        <div style="flex:1"><div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div></div>
+        <span style="font-size:12px;font-weight:600;color:var(--ink-3)">${S.reviewIdx}/${S.reviewSession.length}</span>
+      </div>
+      <div class="screen-scroll screen-pad" style="padding-top:0">
+        <div class="flip-card" id="rv-card">
+          <div class="flip-inner${S.reviewFlipped?' flipped':''}" id="rv-inner">
+            <div class="flip-face" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px">
+              <p style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:18px">Tap to reveal · 点击翻转</p>
+              <div style="font-size:44px;font-weight:700;font-family:var(--serif);color:var(--ink);text-align:center;margin-bottom:10px">${w.word}</div>
+              <div style="font-size:13px;color:var(--ink-3);font-family:var(--mono);margin-bottom:12px">${w.ipa||''} · ${w.pos||''}</div>
+              <div class="tag" style="background:var(--mint-50);color:var(--mint-700);font-size:14px">${w.zh}</div>
+            </div>
+            <div class="flip-face flip-back" style="padding:22px 20px;display:flex;flex-direction:column;justify-content:center;gap:10px">
+              <div style="font-size:22px;font-weight:700;font-family:var(--serif);color:var(--ink)">${w.word} <span style="font-size:14px;color:var(--ink-3);font-weight:400">${w.zh}</span></div>
+              <p style="font-size:14px;color:var(--ink-2);line-height:1.65">${w.def}</p>
+              ${w.mnemonic?`<p style="font-size:12px;color:var(--accent);line-height:1.5">💡 ${w.mnemonic}</p>`:''}
+              <div style="background:var(--beige);border-radius:10px;padding:10px 12px">
+                <p style="font-size:13px;color:var(--ink-2);line-height:1.6;font-style:italic">"${w.sentence||''}"</p>
+                <p style="font-size:11px;color:var(--ink-4);margin-top:4px">${w.zhSentence||''}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+          <button class="btn" data-action="rv-dont" style="padding:14px;border-radius:14px;background:#FBEEE8;color:#B15233;font-size:14px;font-weight:700;gap:6px">${ic('close',16,'#B15233')} Don't know</button>
+          <button class="btn" data-action="rv-know" style="padding:14px;border-radius:14px;background:var(--mint-50);color:var(--mint-700);font-size:14px;font-weight:700;gap:6px">${ic('check',16,'var(--mint-700)')} Know it!</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  // ── Session complete ──────────────────────────────────────────────────────
+  if(S.reviewDone&&S.reviewSession.length){
+    const total=S.reviewSession.length,known=S.reviewKnow;
+    return`<div class="screen" style="background:var(--beige)">
+      ${sbar()}
+      <div class="screen-scroll screen-pad" style="text-align:center;padding-top:40px">
+        <div style="font-size:60px;margin-bottom:14px">🎉</div>
+        <h2 style="font-size:24px;font-weight:700;color:var(--ink);margin-bottom:6px">Review Complete!</h2>
+        <p style="font-size:13px;color:var(--ink-3);margin-bottom:24px">复习完成 · Great work!</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;text-align:left">
+          <div class="card" style="padding:16px;text-align:center"><div style="font-size:32px;font-weight:700;color:var(--mint-600)">${known}</div><div style="font-size:12px;color:var(--ink-3);margin-top:3px">Knew · 认识</div></div>
+          <div class="card" style="padding:16px;text-align:center"><div style="font-size:32px;font-weight:700;color:var(--coral)">${total-known}</div><div style="font-size:12px;color:var(--ink-3);margin-top:3px">Learning · 学习中</div></div>
+        </div>
+        <button class="btn btn-primary" data-action="rv-again" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px">Review Again · 再复习</button>
+        <button class="btn btn-ghost" data-go="home" style="width:100%;padding:14px;font-size:15px">Back Home · 返回首页</button>
+      </div>
+    </div>`;
+  }
+  // ── List view ─────────────────────────────────────────────────────────────
+  const rd=loadRD();const now=Date.now();
+  const av=allVocab();
+  const due=av.filter(w=>{const d=rd[w.id];return d&&d.nextDue<=now;});
+  const upcoming=av.filter(w=>{const d=rd[w.id];return d&&d.nextDue>now;}).slice(0,5);
+  const stageLabels=['5m','30m','1h','8h','1d','3d','7d','14d'];
+  const ys=[5,8,14,30,48,60,68,73];const W=280,H=80;
   let path=`M0,${ys[0]}`;
   for(let i=1;i<ys.length;i++){const x=i*(W/7);path+=` Q${x-W/14},${ys[i-1]} ${x},${ys[i]}`;}
   return`<div class="screen" style="background:var(--beige)">
     ${sbar()}
     <div class="screen-scroll screen-pad">
-      <div style="margin-bottom:18px">
+      <div style="margin-bottom:16px">
         <h2 style="font-size:22px;font-weight:700;color:var(--ink);margin-bottom:3px">Review · 复习</h2>
-        <p style="font-size:13px;color:var(--ink-3)">Ebbinghaus forgetting curve · 艾宾浩斯遗忘曲线</p>
+        <p style="font-size:13px;color:var(--ink-3)">Spaced repetition · 间隔重复记忆法</p>
       </div>
-      <div class="card" style="padding:16px;margin-bottom:18px">
-        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">Memory retention · 记忆保留率</div>
+      <div class="card" style="padding:16px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:10px">Ebbinghaus forgetting curve · 遗忘曲线</div>
         <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;overflow:visible">
           <defs><linearGradient id="cg" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="var(--accent)" stop-opacity=".25"/>
@@ -698,21 +1091,47 @@ function reviewScreen(){
           ${ys.map((y,i)=>`<circle cx="${i*(W/7)}" cy="${y}" r="3.5" fill="var(--accent)"/>`).join('')}
         </svg>
         <div style="display:flex;justify-content:space-between;margin-top:5px">
-          ${stages.map(s=>`<span style="font-size:9px;color:var(--ink-4);font-family:var(--mono)">${s}</span>`).join('')}
+          ${stageLabels.map(s=>`<span style="font-size:9px;color:var(--ink-4);font-family:var(--mono)">${s}</span>`).join('')}
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:14px;font-weight:700;color:var(--ink)">Due now · 待复习</span>
-        <span style="font-size:12px;color:var(--ink-3)">${REVIEW_ITEMS.length} words</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        ${REVIEW_ITEMS.map((it,i)=>`<div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:12px">
-          <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;background:${it.urgent?'var(--mint-50)':'var(--beige)'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${it.urgent?'var(--mint-700)':'var(--ink-4)'}">${it.stage}</div>
-          <div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--ink)">${it.word}</div><div style="font-size:12px;color:var(--ink-3)">${it.zh}</div></div>
-          <div style="font-size:12px;font-weight:600;color:${it.urgent?'var(--accent)':'var(--ink-4)'};margin-right:4px">${it.dueIn}</div>
-          <button class="btn" style="padding:6px 12px;border-radius:9px;background:${it.urgent?'var(--accent)':'var(--hair)'};color:${it.urgent?'#fff':'var(--ink-3)'};font-size:12px;font-weight:600;flex-shrink:0">${it.urgent?'Review':'Later'}</button>
-        </div>`).join('')}
-      </div>
+      ${due.length>0
+        ?`<button class="btn btn-primary" data-action="rv-start" style="width:100%;padding:14px;font-size:15px;margin-bottom:16px;gap:8px">${ic('clock',16,'#fff')} Review Due (${due.length}) · 开始复习</button>`
+        :`<button class="btn btn-primary" data-action="rv-all" style="width:100%;padding:14px;font-size:15px;margin-bottom:16px;gap:8px">${ic('book',16,'#fff')} Review All Words · 复习所有单词</button>`
+      }
+      ${due.length?`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:13px;font-weight:700;color:var(--ink)">Due now · 待复习</span>
+          <span style="font-size:12px;color:var(--accent);font-weight:600">${due.length} words</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+          ${due.slice(0,6).map(w=>{
+            const s=(rd[w.id]||{stage:0}).stage;
+            return`<div class="card" style="padding:11px 14px;display:flex;align-items:center;gap:10px">
+              <div style="width:34px;height:34px;border-radius:9px;flex-shrink:0;background:var(--mint-50);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--mint-700)">S${s}</div>
+              <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:var(--ink)">${w.word}</div><div style="font-size:11px;color:var(--ink-3)">${w.zh}</div></div>
+              <span style="font-size:11px;font-weight:700;color:var(--accent)">Due</span>
+            </div>`;
+          }).join('')}
+        </div>`:''}
+      ${upcoming.length?`
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px">Coming up · 即将复习</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${upcoming.map(w=>{
+            const d=rd[w.id];const mins=Math.round((d.nextDue-now)/60000);
+            const t=mins<60?`${mins}m`:mins<1440?`${Math.round(mins/60)}h`:`${Math.round(mins/1440)}d`;
+            return`<div class="card" style="padding:11px 14px;display:flex;align-items:center;gap:10px">
+              <div style="width:34px;height:34px;border-radius:9px;flex-shrink:0;background:var(--beige);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ink-4)">S${d.stage}</div>
+              <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:var(--ink)">${w.word}</div><div style="font-size:11px;color:var(--ink-3)">${w.zh}</div></div>
+              <span style="font-size:11px;font-weight:600;color:var(--ink-4)">${t}</span>
+            </div>`;
+          }).join('')}
+        </div>`:''}
+      ${!due.length&&!upcoming.length?`
+        <div style="text-align:center;padding:36px 20px">
+          <div style="font-size:48px;margin-bottom:12px">📚</div>
+          <p style="font-size:14px;font-weight:600;color:var(--ink-2)">No reviews scheduled yet</p>
+          <p style="font-size:12px;color:var(--ink-4);margin-top:6px;line-height:1.6">Study flashcards in Learn mode and tap<br>"Know it" to schedule spaced reviews.<br>或点击上方按钮复习全部单词</p>
+        </div>`:''}
     </div>
     ${tabbar('review')}
   </div>`;
@@ -896,8 +1315,113 @@ function doctorScreen(){
   </div>`;
 }
 
+function wordsScreen(){
+  const q=S.addSearch.trim().toLowerCase();
+  const av=allVocab();
+  const results=q.length>0?av.filter(w=>
+    w.word.toLowerCase().includes(q)||
+    w.zh.includes(S.addSearch)||
+    (w.def||'').toLowerCase().includes(q)
+  ):[];
+  const cv=loadCV();
+  return`<div class="screen" style="background:var(--beige)">
+    ${sbar()}
+    <div style="padding:0 20px 10px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <h2 style="font-size:20px;font-weight:700;color:var(--ink);flex:1">Words · 单词库</h2>
+        <span style="font-size:12px;color:var(--ink-4)">${av.length} total</span>
+      </div>
+      <div style="position:relative">
+        <input id="word-search" type="search" placeholder="Search word, definition, 中文..." value="${S.addSearch.replace(/"/g,'&quot;')}"
+          style="width:100%;padding:11px 14px 11px 40px;border-radius:13px;border:1.5px solid ${q?'var(--accent)':'var(--hair)'};font-size:14px;background:var(--paper);-webkit-appearance:none">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none">${ic('search',16,'var(--ink-4)')}</span>
+        ${q?`<button id="clear-search" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;padding:4px">${ic('close',14,'var(--ink-4)')}</button>`:''}
+      </div>
+    </div>
+    <div class="screen-scroll screen-pad" style="padding-top:4px">
+      <div id="search-results">
+      ${q?`
+        <div style="font-size:12px;color:var(--ink-4);margin-bottom:10px">${results.length} result${results.length===1?'':'s'} · ${results.length}个结果</div>
+        ${results.length>0
+          ?results.map(w=>`<div class="card" style="padding:13px 14px;margin-bottom:8px">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <span style="font-size:22px;flex-shrink:0;margin-top:1px">${w.emoji||'📖'}</span>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:baseline;gap:7px;flex-wrap:wrap">
+                    <span style="font-size:16px;font-weight:700;color:var(--ink)">${w.word}</span>
+                    <span style="font-size:11px;color:var(--ink-4);font-family:var(--mono)">${w.ipa||''}</span>
+                    <span class="tag" style="background:var(--mint-50);color:var(--mint-700);font-size:10px">${w.zh}</span>
+                  </div>
+                  <p style="font-size:12px;color:var(--ink-3);margin-top:4px;line-height:1.5">${w.def||''}</p>
+                </div>
+              </div>
+            </div>`).join('')
+          :`<div class="card" style="padding:20px;text-align:center;margin-bottom:8px">
+              <p style="font-size:28px;margin-bottom:8px">🔍</p>
+              <p style="font-size:14px;font-weight:600;color:var(--ink-2)">Not found in vocabulary</p>
+              <p style="font-size:12px;color:var(--ink-4);margin-top:4px">未找到 · Add it as a custom word below</p>
+            </div>`
+        }`
+      :`<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+          ${['All','anatomy','cardiology','clinic','pharma'].map(b=>{
+            const count=b==='All'?av.length:av.filter(x=>x.book===b).length;
+            const bk=BOOKS.find(x=>x.id===b);
+            const col=bk?bk.color:'var(--ink-3)';
+            return`<button class="card" data-book-filter="${b}" style="padding:11px 14px;display:flex;align-items:center;gap:10px;border:none;cursor:pointer;text-align:left;background:${S.addBookFilter===b?col+'18':'var(--paper)'};outline:${S.addBookFilter===b?`2px solid ${col}`:'none'}">
+              <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+              <span style="font-size:13px;font-weight:600;color:var(--ink);flex:1">${b==='All'?'All Books · 所有':bk?bk.title:b}</span>
+              <span style="font-size:12px;color:var(--ink-4)">${count}</span>
+            </button>`;
+          }).join('')}
+        </div>`
+      }
+      </div>
+      ${!S.addShowForm
+        ?`<button class="btn btn-primary" data-action="show-add" style="width:100%;padding:13px;font-size:14px;gap:8px;margin-bottom:14px">${ic('plus',16,'#fff')} Add Custom Word · 添加单词</button>`
+        :`<div class="card card-lg" style="padding:18px;margin-bottom:14px;animation:mp-fadein .2s">
+            <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:14px">Add New Word · 添加新单词</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">English Word *</div>
+                <input id="add-word" placeholder="e.g. Hypertension" value="${S.addWord.replace(/"/g,'&quot;')}"
+                  style="width:100%;padding:10px 12px;border-radius:11px;border:1.5px solid var(--hair);font-size:14px;background:var(--paper)">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Chinese · 中文 *</div>
+                <input id="add-zh" placeholder="e.g. 高血压" value="${S.addZh.replace(/"/g,'&quot;')}"
+                  style="width:100%;padding:10px 12px;border-radius:11px;border:1.5px solid var(--hair);font-size:14px;background:var(--paper)">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Definition (optional)</div>
+                <input id="add-def" placeholder="e.g. Abnormally high blood pressure" value="${S.addDef.replace(/"/g,'&quot;')}"
+                  style="width:100%;padding:10px 12px;border-radius:11px;border:1.5px solid var(--hair);font-size:14px;background:var(--paper)">
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+              <button class="btn btn-ghost" data-action="cancel-add" style="padding:11px;font-size:14px">Cancel</button>
+              <button class="btn btn-primary" data-action="save-word" style="padding:11px;font-size:14px">Save · 保存</button>
+            </div>
+          </div>`
+      }
+      ${cv.length>0?`
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px">My Custom Words · 我的单词 (${cv.length})</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${cv.map((w,i)=>`<div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:20px">${w.emoji||'📝'}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:700;color:var(--ink)">${w.word}</div>
+              <div style="font-size:12px;color:var(--ink-3)">${w.zh}${w.def?` · ${w.def}`:''}</div>
+            </div>
+            <button class="btn" data-del="${i}" style="padding:6px;border-radius:8px;background:var(--beige)">${ic('close',14,'var(--ink-4)')}</button>
+          </div>`).join('')}
+        </div>`:''}
+    </div>
+    ${tabbar('words')}
+  </div>`;
+}
+
 function navPill(){
-  const screens=['login','home','learn','review','quiz','me','doctor'];
+  const screens=['login','home','learn','review','quiz','words','me','doctor'];
   return`<div class="nav-pill">${screens.map(s=>`<button class="nav-btn" data-go="${s}" style="background:${S.screen===s?'var(--accent)':'transparent'};color:${S.screen===s?'#fff':'var(--ink-3)'}">${s}</button>`).join('')}</div>`;
 }
 
@@ -923,21 +1447,11 @@ function tweaksPanel(){
    RENDER
 ══════════════════════════════════════════════════════════════════════════ */
 const screens={login:loginScreen,home:homeScreen,learn:learnScreen,
-  review:reviewScreen,quiz:quizScreen,me:profileScreen,doctor:doctorScreen};
+  review:reviewScreen,quiz:quizScreen,me:profileScreen,doctor:doctorScreen,words:wordsScreen};
 
 function render(){
   const fn=screens[S.screen]||homeScreen;
-  document.getElementById('app').innerHTML=`
-    ${navPill()}
-    <div class="stage">
-      <div class="phone-shell">
-        <div class="phone-island"></div>
-        <div class="phone-homebar"></div>
-        <div class="phone-inner">${fn()}</div>
-      </div>
-      <p class="caption">MedPal · ${VOCAB.length} Medical Words · EN+中文</p>
-    </div>
-    ${tweaksPanel()}`;
+  document.getElementById('app').innerHTML=`${navPill()}${fn()}${tweaksPanel()}`;
   bind();
   // Restore flip state
   if(S.screen==='learn'&&S.cardFlipped){
@@ -949,6 +1463,16 @@ function render(){
     const inp=document.getElementById('spell-input');
     if(inp){inp.value=S.quizSpelled;inp.focus();}
   }
+  // Restore review flip state
+  if(S.reviewSession.length&&S.reviewIdx<S.reviewSession.length&&S.reviewFlipped){
+    const ri=document.getElementById('rv-inner');
+    if(ri)ri.classList.add('flipped');
+  }
+  // Keep search input focused
+  if(S.screen==='words'){
+    const si=document.getElementById('word-search');
+    if(si){const v=si.value;si.focus();si.setSelectionRange(v.length,v.length);}
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -957,7 +1481,11 @@ function render(){
 function bind(){
   // Navigation: data-go
   document.querySelectorAll('[data-go]').forEach(el=>{
-    el.addEventListener('click',e=>{e.stopPropagation();go(el.dataset.go);});
+    el.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(el.dataset.book!==undefined){S.currentBook=el.dataset.book||null;S.cardIdx=0;}
+      go(el.dataset.go);
+    });
   });
 
   // Flip card
@@ -976,11 +1504,13 @@ function bind(){
   });
   document.querySelector('[data-action="next-card"]')?.addEventListener('click',e=>{
     e.stopPropagation();
-    if(S.cardIdx<VOCAB.length-1){S.cardIdx++;S.cardFlipped=false;render();}
+    const cv=currentVocab();if(S.cardIdx<cv.length-1){S.cardIdx++;S.cardFlipped=false;render();}
   });
   document.querySelector('[data-action="know"]')?.addEventListener('click',e=>{
     e.stopPropagation();
-    if(S.cardIdx<VOCAB.length-1){S.cardIdx++;S.cardFlipped=false;render();}
+    const cv=currentVocab();
+    const w=cv[S.cardIdx];if(w)markWord(w.id,true);
+    if(S.cardIdx<cv.length-1){S.cardIdx++;S.cardFlipped=false;render();}
   });
 
   // Play wave + speech
@@ -990,7 +1520,7 @@ function bind(){
       const bars=e.currentTarget.querySelectorAll('.wave-bar');
       bars.forEach(b=>b.classList.add('active'));
       if(window.speechSynthesis && sfx==='-card'){
-        const word=VOCAB[S.cardIdx]?.word||'';
+        const word=currentVocab()[S.cardIdx]?.word||'';
         window.speechSynthesis.cancel();
         const utt=new SpeechSynthesisUtterance(word);
         utt.lang='en-US';utt.rate=0.85;
@@ -1005,7 +1535,7 @@ function bind(){
   // Shuffle
   document.querySelector('[data-action="shuffle"]')?.addEventListener('click',e=>{
     e.stopPropagation();
-    S.cardIdx=Math.floor(Math.random()*VOCAB.length);
+    S.cardIdx=Math.floor(Math.random()*currentVocab().length);
     S.cardFlipped=false;render();
   });
 
@@ -1075,6 +1605,93 @@ function bind(){
   // Accent swatches
   document.querySelectorAll('[data-accent]').forEach(el=>{
     el.addEventListener('click',()=>{applyAccent(el.dataset.accent);render();});
+  });
+
+  // ── Review: flip card ────────────────────────────────────────────────────
+  const rvc=document.getElementById('rv-card');
+  if(rvc){
+    let _rt=false;
+    const doRvFlip=()=>{S.reviewFlipped=!S.reviewFlipped;const ri=document.getElementById('rv-inner');if(ri)ri.classList.toggle('flipped',S.reviewFlipped);};
+    rvc.addEventListener('touchstart',e=>{if(e.target.closest('[data-action]'))return;_rt=true;doRvFlip();},{passive:true});
+    rvc.addEventListener('click',e=>{if(e.target.closest('[data-action]'))return;if(_rt){_rt=false;return;}doRvFlip();});
+  }
+
+  // ── Review: start / end / know / dont ───────────────────────────────────
+  document.querySelector('[data-action="rv-start"]')?.addEventListener('click',()=>{
+    const rd=loadRD();const now=Date.now();
+    const due=allVocab().filter(w=>{const d=rd[w.id];return d&&d.nextDue<=now;});
+    startReview(due.length?due:allVocab());render();
+  });
+  document.querySelector('[data-action="rv-all"]')?.addEventListener('click',()=>{
+    startReview(allVocab());render();
+  });
+  document.querySelector('[data-action="rv-know"]')?.addEventListener('click',()=>{
+    const id=S.reviewSession[S.reviewIdx];if(id!=null)markWord(id,true);
+    S.reviewKnow++;S.reviewIdx++;S.reviewFlipped=false;
+    if(S.reviewIdx>=S.reviewSession.length)S.reviewDone=true;
+    render();
+  });
+  document.querySelector('[data-action="rv-dont"]')?.addEventListener('click',()=>{
+    const id=S.reviewSession[S.reviewIdx];if(id!=null)markWord(id,false);
+    S.reviewIdx++;S.reviewFlipped=false;
+    if(S.reviewIdx>=S.reviewSession.length)S.reviewDone=true;
+    render();
+  });
+  document.querySelector('[data-action="end-review"]')?.addEventListener('click',()=>{
+    S.reviewSession=[];S.reviewDone=false;render();
+  });
+  document.querySelector('[data-action="rv-again"]')?.addEventListener('click',()=>{
+    startReview(allVocab().filter(w=>S.reviewSession.includes(w.id)));render();
+  });
+
+  // ── Words: search ────────────────────────────────────────────────────────
+  document.getElementById('word-search')?.addEventListener('input',e=>{
+    S.addSearch=e.target.value;
+    // live update results without full re-render to keep focus
+    const q=S.addSearch.trim().toLowerCase();
+    const av=allVocab();
+    const results=q?av.filter(w=>w.word.toLowerCase().includes(q)||w.zh.includes(S.addSearch)||(w.def||'').toLowerCase().includes(q)):[];
+    const container=document.getElementById('search-results');
+    if(container){
+      if(!q){container.innerHTML='';return;}
+      container.innerHTML=results.length>0
+        ?results.map(w=>`<div class="card" style="padding:13px 14px;margin-bottom:8px"><div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:22px;flex-shrink:0">${w.emoji||'📖'}</span><div style="flex:1;min-width:0"><div style="display:flex;align-items:baseline;gap:7px;flex-wrap:wrap"><span style="font-size:16px;font-weight:700;color:var(--ink)">${w.word}</span><span style="font-size:11px;color:var(--ink-4);font-family:var(--mono)">${w.ipa||''}</span><span class="tag" style="background:var(--mint-50);color:var(--mint-700);font-size:10px">${w.zh}</span></div><p style="font-size:12px;color:var(--ink-3);margin-top:4px;line-height:1.5">${w.def||''}</p></div></div></div>`).join('')
+        :`<div class="card" style="padding:20px;text-align:center;margin-bottom:8px"><p style="font-size:28px;margin-bottom:8px">🔍</p><p style="font-size:14px;font-weight:600;color:var(--ink-2)">Not found in vocabulary</p><p style="font-size:12px;color:var(--ink-4);margin-top:4px">Add it as a custom word below</p></div>`;
+    } else {render();}
+  });
+  document.getElementById('clear-search')?.addEventListener('click',()=>{
+    S.addSearch='';render();
+  });
+
+  // ── Words: book filter ───────────────────────────────────────────────────
+  document.querySelectorAll('[data-book-filter]').forEach(el=>{
+    el.addEventListener('click',()=>{S.addBookFilter=el.dataset.bookFilter;render();});
+  });
+
+  // ── Words: add form ──────────────────────────────────────────────────────
+  document.querySelector('[data-action="show-add"]')?.addEventListener('click',()=>{
+    S.addShowForm=true;render();
+  });
+  document.querySelector('[data-action="cancel-add"]')?.addEventListener('click',()=>{
+    S.addShowForm=false;S.addWord='';S.addZh='';S.addDef='';render();
+  });
+  document.getElementById('add-word')?.addEventListener('input',e=>{S.addWord=e.target.value;});
+  document.getElementById('add-zh')?.addEventListener('input',e=>{S.addZh=e.target.value;});
+  document.getElementById('add-def')?.addEventListener('input',e=>{S.addDef=e.target.value;});
+  document.querySelector('[data-action="save-word"]')?.addEventListener('click',()=>{
+    const word=S.addWord.trim();const zh=S.addZh.trim();
+    if(!word||!zh){alert('Please enter both English and Chinese · 请输入英文和中文');return;}
+    const cv=loadCV();
+    const newId=9000+cv.length;
+    cv.push({id:newId,word,zh,def:S.addDef.trim(),ipa:'',pos:'',book:'custom',emoji:'📝',sentence:'',zhSentence:'',mnemonic:''});
+    saveCV(cv);
+    S.addShowForm=false;S.addWord='';S.addZh='';S.addDef='';
+    render();
+  });
+  document.querySelectorAll('[data-del]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const cv=loadCV();cv.splice(parseInt(el.dataset.del),1);saveCV(cv);render();
+    });
   });
 }
 
