@@ -903,7 +903,7 @@ function homeScreen(){
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
         <h3 style="font-size:16px;font-weight:700;color:var(--ink)">Books · 课本</h3>
-        <button style="border:none;background:transparent;cursor:pointer;font-size:13px;color:var(--ink-3)">See all →</button>
+        <button data-go="words" style="border:none;background:transparent;cursor:pointer;font-size:13px;color:var(--ink-3)">See all →</button>
       </div>
       <div style="display:flex;flex-direction:column;gap:11px">
         ${BOOKS.map(b=>`<button class="btn card" data-go="learn" data-book="${b.id}" style="padding:14px 16px;gap:14px;text-align:left;justify-content:flex-start">
@@ -1594,9 +1594,9 @@ function bind(){
     el.addEventListener('click',()=>{S.doctorDuration=el.dataset.dur;render();});
   });
 
-  // Tweaks toggle
-  document.querySelector('[data-action="toggle-tweaks"]')?.addEventListener('click',()=>{
-    S.tweaksOpen=!S.tweaksOpen;render();
+  // Tweaks toggle (querySelectorAll covers both the gear button AND the close X inside the panel)
+  document.querySelectorAll('[data-action="toggle-tweaks"]').forEach(el=>{
+    el.addEventListener('click',()=>{S.tweaksOpen=!S.tweaksOpen;render();});
   });
 
   // Accent swatches
