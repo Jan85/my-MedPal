@@ -713,7 +713,7 @@ const S={
   quizMode:'mc', quizIdx:0, quizPicked:null, quizSpelled:'',
   quizOptions:null, quizCorrect:0, quizOptionsFor:-1, quizScore:120,
   doctorPart:'chest', doctorSelected:new Set(), doctorDuration:'2 days',
-  accent:'mint', tweaksOpen:false,
+  accent:'mint', tweaksOpen:false, profileEditOpen:false,
   reviewSession:[], reviewIdx:0, reviewFlipped:false, reviewDone:false, reviewKnow:0,
   addSearch:'', addShowForm:false, addWord:'', addZh:'', addDef:'', addBookFilter:'All',
 };
@@ -763,6 +763,8 @@ function saveRD(d){try{localStorage.setItem('mp_rv',JSON.stringify(d));}catch{}}
 function loadCV(){try{return JSON.parse(localStorage.getItem('mp_cv')||'[]');}catch{return[];}}
 function saveCV(v){try{localStorage.setItem('mp_cv',JSON.stringify(v));}catch{}}
 function allVocab(){return[...VOCAB,...loadCV()];}
+function loadProfile(){try{return JSON.parse(localStorage.getItem('mp_profile')||'{"name":"Lin Wei","zh":"林伟","bio":"Learning English for travel"}');}catch{return{name:'Lin Wei',zh:'林伟',bio:'Learning English for travel'};}}
+function saveProfile(p){try{localStorage.setItem('mp_profile',JSON.stringify(p));}catch{}}
 function loadActs(){try{return JSON.parse(localStorage.getItem('mp_acts')||'{}');}catch{return{};}}
 function saveActs(a){try{localStorage.setItem('mp_acts',JSON.stringify(a));}catch{}}
 function logActivity(){
@@ -1208,6 +1210,7 @@ function quizScreen(){
 }
 
 function profileScreen(){
+  const prof=loadProfile();
   // ── Real SRS stats ───────────────────────────────────────────────────────
   const rd=loadRD();
   const ids=Object.keys(rd);
@@ -1240,12 +1243,39 @@ function profileScreen(){
       <span class="appbar-title" style="flex:1">My Profile · 个人中心</span>
       <button class="btn btn-icon" data-action="toggle-tweaks">${ic('settings',20,'var(--ink-3)')}</button>
     </div>
+    ${S.profileEditOpen?`
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end" data-action="close-profile-edit">
+      <div style="background:var(--paper);border-radius:22px 22px 0 0;padding:22px 20px 32px;width:100%;box-sizing:border-box;animation:mp-fadein .2s" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+          <span style="font-size:16px;font-weight:700;color:var(--ink)">Edit Profile · 编辑资料</span>
+          <button class="btn btn-icon" data-action="close-profile-edit">${ic('close',16,'var(--ink-3)')}</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:13px">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Display Name · 英文名</div>
+            <input id="prof-name" value="${prof.name.replace(/"/g,'&quot;')}" placeholder="e.g. Lin Wei"
+              style="width:100%;padding:11px 13px;border-radius:12px;border:1.5px solid var(--hair);font-size:15px;background:var(--beige);box-sizing:border-box">
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Chinese Name · 中文名</div>
+            <input id="prof-zh" value="${prof.zh.replace(/"/g,'&quot;')}" placeholder="e.g. 林伟"
+              style="width:100%;padding:11px 13px;border-radius:12px;border:1.5px solid var(--hair);font-size:15px;background:var(--beige);box-sizing:border-box">
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">About · 关于我</div>
+            <input id="prof-bio" value="${prof.bio.replace(/"/g,'&quot;')}" placeholder="e.g. Learning English for travel"
+              style="width:100%;padding:11px 13px;border-radius:12px;border:1.5px solid var(--hair);font-size:15px;background:var(--beige);box-sizing:border-box">
+          </div>
+        </div>
+        <button class="btn btn-primary" data-action="save-profile" style="width:100%;padding:13px;font-size:15px;margin-top:18px">Save · 保存</button>
+      </div>
+    </div>`:''}
     <div class="screen-scroll screen-pad">
       <div style="background:var(--ink);border-radius:20px;padding:20px;box-shadow:var(--sh-3);margin-bottom:16px">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-          <div style="width:58px;height:58px;border-radius:18px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0">L</div>
-          <div style="flex:1"><div style="font-size:17px;font-weight:700;color:#fff">Lin Wei · 林伟</div><div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:2px">${totalWords} words in library</div></div>
-          <button class="btn" data-action="toggle-tweaks" style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.1)">${ic('settings',17,'rgba(255,255,255,.65)')}</button>
+          <div style="width:58px;height:58px;border-radius:18px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0">${(prof.name||'?')[0].toUpperCase()}</div>
+          <div style="flex:1"><div style="font-size:17px;font-weight:700;color:#fff">${prof.name} · ${prof.zh}</div><div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:2px">${prof.bio||'—'}</div></div>
+          <button class="btn" data-action="edit-profile" style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.1)">${ic('settings',17,'rgba(255,255,255,.65)')}</button>
         </div>
         <div style="display:flex;gap:7px">
           <div class="tag" style="background:rgba(127,209,174,.18);color:var(--mint)">LEVEL ${level}</div>
@@ -1659,6 +1689,21 @@ function bind(){
   // Tweaks toggle (querySelectorAll covers both the gear button AND the close X inside the panel)
   document.querySelectorAll('[data-action="toggle-tweaks"]').forEach(el=>{
     el.addEventListener('click',()=>{S.tweaksOpen=!S.tweaksOpen;render();});
+  });
+
+  // Profile edit
+  document.querySelector('[data-action="edit-profile"]')?.addEventListener('click',()=>{
+    S.profileEditOpen=true;render();
+  });
+  document.querySelectorAll('[data-action="close-profile-edit"]').forEach(el=>{
+    el.addEventListener('click',()=>{S.profileEditOpen=false;render();});
+  });
+  document.querySelector('[data-action="save-profile"]')?.addEventListener('click',()=>{
+    const n=document.getElementById('prof-name')?.value.trim();
+    const z=document.getElementById('prof-zh')?.value.trim();
+    const b=document.getElementById('prof-bio')?.value.trim();
+    if(n){saveProfile({name:n,zh:z||'',bio:b||''});}
+    S.profileEditOpen=false;render();
   });
 
   // Accent swatches
