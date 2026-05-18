@@ -716,6 +716,7 @@ const S={
   accent:'mint', tweaksOpen:false, profileEditOpen:false,
   reviewSession:[], reviewIdx:0, reviewFlipped:false, reviewDone:false, reviewKnow:0,
   addSearch:'', addShowForm:false, addWord:'', addZh:'', addDef:'', addBookFilter:'All',
+  dwSearch:'',
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -763,6 +764,15 @@ function saveRD(d){try{localStorage.setItem('mp_rv',JSON.stringify(d));}catch{}}
 function loadCV(){try{return JSON.parse(localStorage.getItem('mp_cv')||'[]');}catch{return[];}}
 function saveCV(v){try{localStorage.setItem('mp_cv',JSON.stringify(v));}catch{}}
 function allVocab(){return[...VOCAB,...loadCV()];}
+function loadDocWords(){try{return JSON.parse(localStorage.getItem('mp_dw')||'[]');}catch{return[];}}
+function saveDocWords(a){try{localStorage.setItem('mp_dw',JSON.stringify(a));}catch{}}
+function speak(text){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US';u.rate=0.82;u.pitch=1;
+  window.speechSynthesis.speak(u);
+}
 function loadProfile(){try{return JSON.parse(localStorage.getItem('mp_profile')||'{"name":"Lin Wei","zh":"林伟","bio":"Learning English for travel"}');}catch{return{name:'Lin Wei',zh:'林伟',bio:'Learning English for travel'};}}
 function saveProfile(p){try{localStorage.setItem('mp_profile',JSON.stringify(p));}catch{}}
 function loadActs(){try{return JSON.parse(localStorage.getItem('mp_acts')||'{}');}catch{return{};}}
@@ -1393,6 +1403,15 @@ function doctorScreen(){
         :`<div style="text-align:center;padding:24px 20px;color:var(--ink-4);font-size:13px">
             Select symptoms above to generate your sentence<br><span style="font-size:12px">请选择症状以生成句子</span>
           </div>`}
+      <div style="height:12px"></div>
+      <button class="btn card" data-go="docwords" style="width:100%;padding:14px 16px;gap:12px;text-align:left;justify-content:flex-start;border:1.5px dashed var(--mint-100)">
+        <div style="width:44px;height:44px;border-radius:13px;background:var(--mint-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px">💊</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;color:var(--ink)">My Doctor Vocab · 看诊单词</div>
+          <div style="font-size:12px;color:var(--ink-3)">Build your personal word list · ${loadDocWords().length} saved</div>
+        </div>
+        ${ic('chevron',18,'var(--ink-4)')}
+      </button>
     </div>
   </div>`;
 }
@@ -1509,8 +1528,74 @@ function wordsScreen(){
   </div>`;
 }
 
+function docWordsScreen(){
+  const dw=loadDocWords();
+  const av=allVocab();
+  const saved=av.filter(w=>dw.includes(w.id));
+  const q=S.dwSearch.trim().toLowerCase();
+  const list=q?av.filter(w=>w.word.toLowerCase().includes(q)||w.zh.includes(S.dwSearch)):av;
+  const wordCard=w=>`<div class="card" style="padding:14px;position:relative;display:flex;flex-direction:column">
+    <button data-action="toggle-dw" data-id="${w.id}" style="position:absolute;top:8px;right:8px;border:none;background:rgba(0,0,0,.06);border-radius:8px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0" title="Remove">${ic('close',12,'var(--ink-4)')}</button>
+    <div style="font-size:26px;margin-bottom:6px">${w.emoji||'📖'}</div>
+    <div style="font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:2px;padding-right:22px">${w.word}</div>
+    <div style="font-size:10px;color:var(--ink-4);font-family:var(--mono);margin-bottom:5px">${w.ipa||''}</div>
+    <div style="font-size:13px;font-weight:600;color:var(--accent);flex:1;margin-bottom:10px">${w.zh}</div>
+    <button data-action="play-word" data-word="${w.word.replace(/"/g,'&quot;')}" style="width:100%;border:none;background:var(--mint-50);border-radius:9px;padding:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--mint-700);font-size:12px;font-weight:600">
+      ${ic('speaker',14,'var(--mint-700)')} Play
+    </button>
+  </div>`;
+  return`<div class="screen" style="background:var(--beige)">
+    ${sbar()}
+    <div style="padding:12px 20px 10px;flex-shrink:0;display:flex;align-items:center;gap:12px">
+      <button class="btn-icon btn" data-go="doctor">${ic('back',18,'var(--ink)')}</button>
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:700;color:var(--ink)">Doctor Vocab · 看诊单词</div>
+        <div style="font-size:11px;color:var(--ink-3)">Key words for your visit · 就医必备词汇</div>
+      </div>
+      <span style="font-size:12px;font-weight:700;color:var(--accent);background:var(--mint-50);padding:4px 10px;border-radius:20px">${saved.length}</span>
+    </div>
+    <div class="screen-scroll screen-pad" style="padding-top:4px">
+      ${saved.length===0
+        ?`<div class="card" style="padding:32px 20px;text-align:center;margin-bottom:16px">
+            <p style="font-size:40px;margin-bottom:10px">💊</p>
+            <p style="font-size:15px;font-weight:700;color:var(--ink-2)">No words yet</p>
+            <p style="font-size:13px;color:var(--ink-4);margin-top:5px;line-height:1.6">Tap <strong>Add</strong> below to collect key words<br>for your doctor visit · 添加就医必备词汇</p>
+          </div>`
+        :`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+            ${saved.map(wordCard).join('')}
+          </div>`
+      }
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="flex:1;height:1px;background:var(--hair)"></div>
+        <span style="font-size:10px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.6px">Add from library · 添加单词</span>
+        <div style="flex:1;height:1px;background:var(--hair)"></div>
+      </div>
+      <div style="position:relative;margin-bottom:10px">
+        <input id="dw-search" type="text" placeholder="Filter words · 搜索..." value="${S.dwSearch.replace(/"/g,'&quot;')}"
+          style="width:100%;padding:10px 14px 10px 38px;border-radius:12px;border:1.5px solid var(--hair);font-size:13px;background:var(--paper);-webkit-appearance:none">
+        <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none">${ic('search',15,'var(--ink-4)')}</span>
+      </div>
+      <div id="dw-add-list">
+        ${list.map(w=>{
+          const added=dw.includes(w.id);
+          return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:${added?'var(--mint-50)':'var(--paper)'};margin-bottom:6px;border:1.5px solid ${added?'var(--mint-100)':'transparent'}">
+            <span style="font-size:18px;flex-shrink:0">${w.emoji||'📖'}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;color:var(--ink)">${w.word}</div>
+              <div style="font-size:11px;color:var(--ink-3)">${w.zh}</div>
+            </div>
+            <button data-action="toggle-dw" data-id="${w.id}" style="flex-shrink:0;border:none;border-radius:9px;padding:6px 11px;cursor:pointer;background:${added?'var(--accent)':'var(--beige)'};color:${added?'#fff':'var(--ink-3)'};font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px">
+              ${added?`${ic('check',11,'#fff')} Added`:`${ic('plus',11,'var(--ink-4)')} Add`}
+            </button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
 function navPill(){
-  const screens=['login','home','learn','review','quiz','words','me','doctor'];
+  const screens=['login','home','learn','review','quiz','words','me','doctor','docwords'];
   return`<div class="nav-pill">${screens.map(s=>`<button class="nav-btn" data-go="${s}" style="background:${S.screen===s?'var(--accent)':'transparent'};color:${S.screen===s?'#fff':'var(--ink-3)'}">${s}</button>`).join('')}</div>`;
 }
 
@@ -1536,7 +1621,7 @@ function tweaksPanel(){
    RENDER
 ══════════════════════════════════════════════════════════════════════════ */
 const screens={login:loginScreen,home:homeScreen,learn:learnScreen,
-  review:reviewScreen,quiz:quizScreen,me:profileScreen,doctor:doctorScreen,words:wordsScreen};
+  review:reviewScreen,quiz:quizScreen,me:profileScreen,doctor:doctorScreen,words:wordsScreen,docwords:docWordsScreen};
 
 function render(){
   const fn=screens[S.screen]||homeScreen;
@@ -1560,6 +1645,10 @@ function render(){
   // Keep search input focused only when user was actively typing (has a query)
   if(S.screen==='words'&&S.addSearch.trim()){
     const si=document.getElementById('word-search');
+    if(si){const v=si.value;si.focus();si.setSelectionRange(v.length,v.length);}
+  }
+  if(S.screen==='docwords'&&S.dwSearch.trim()){
+    const si=document.getElementById('dw-search');
     if(si){const v=si.value;si.focus();si.setSelectionRange(v.length,v.length);}
   }
 }
@@ -1796,6 +1885,57 @@ function bind(){
     el.addEventListener('click',()=>{
       const cv=loadCV();cv.splice(parseInt(el.dataset.del),1);saveCV(cv);render();
     });
+  });
+
+  // ── Doctor Vocab: play TTS ────────────────────────────────────────────────
+  document.querySelectorAll('[data-action="play-word"]').forEach(el=>{
+    el.addEventListener('click',()=>speak(el.dataset.word));
+  });
+
+  // ── Doctor Vocab: toggle add / remove ────────────────────────────────────
+  document.querySelectorAll('[data-action="toggle-dw"]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const id=parseInt(el.dataset.id);
+      const dw=loadDocWords();
+      const idx=dw.indexOf(id);
+      if(idx>=0)dw.splice(idx,1);else dw.push(id);
+      saveDocWords(dw);render();
+    });
+  });
+
+  // ── Doctor Vocab: live search filter ─────────────────────────────────────
+  document.getElementById('dw-search')?.addEventListener('input',e=>{
+    S.dwSearch=e.target.value;
+    const q=S.dwSearch.trim().toLowerCase();
+    const dw=loadDocWords();
+    const av=allVocab();
+    const list=q?av.filter(w=>w.word.toLowerCase().includes(q)||w.zh.includes(S.dwSearch)):av;
+    const container=document.getElementById('dw-add-list');
+    if(container){
+      container.innerHTML=list.map(w=>{
+        const added=dw.includes(w.id);
+        return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:${added?'var(--mint-50)':'var(--paper)'};margin-bottom:6px;border:1.5px solid ${added?'var(--mint-100)':'transparent'}">
+          <span style="font-size:18px;flex-shrink:0">${w.emoji||'📖'}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--ink)">${w.word}</div>
+            <div style="font-size:11px;color:var(--ink-3)">${w.zh}</div>
+          </div>
+          <button data-action="toggle-dw" data-id="${w.id}" style="flex-shrink:0;border:none;border-radius:9px;padding:6px 11px;cursor:pointer;background:${added?'var(--accent)':'var(--beige)'};color:${added?'#fff':'var(--ink-3)'};font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px">
+            ${added?`✓ Added`:`+ Add`}
+          </button>
+        </div>`;
+      }).join('');
+      // Re-attach toggle listeners on the live-updated rows
+      container.querySelectorAll('[data-action="toggle-dw"]').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const id=parseInt(btn.dataset.id);
+          const dw2=loadDocWords();
+          const idx=dw2.indexOf(id);
+          if(idx>=0)dw2.splice(idx,1);else dw2.push(id);
+          saveDocWords(dw2);render();
+        });
+      });
+    }
   });
 }
 
