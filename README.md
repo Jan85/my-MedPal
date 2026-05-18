@@ -25,3 +25,16 @@ cd C:\Users\xxxx\Documents\ClaudeCode\my-MedPal
 	 
 >> Then on iPhone (USB hotspot): http://<PC-IP>:5173/MedPal.html
 		where <PC-IP> = http://172.xx.xx.xx
+
+# Step 2 — enable GitHub Pages:
+
+Go to https://github.com/jan85/my-MedPal
+Click Settings → Pages (left sidebar)
+Under Source, select Deploy from a branch
+Branch: main, Folder: / (root) → click Save
+Step 3 — open on iPhone Safari:
+
+After ~1 minute, your app will be live at:
+
+https://jan85.github.io/my-MedPal/
+Open that URL in Safari on iPhone — works on any WiFi, anywhere.
