@@ -12,7 +12,16 @@
       "Bash(node -e \" const chunks = []; process.stdin.on\\('data', d => chunks.push\\(d\\)\\); process.stdin.on\\('end', \\(\\) => { const text = Buffer.concat\\(chunks\\).toString\\(\\); const lines = text.trim\\(\\).split\\('\\\\n'\\); lines.forEach\\(line => { try { const d = JSON.parse\\(line\\); // Try various message formats const content = d.content; const role = d.role; if \\(content && role\\) { if \\(typeof content === 'string'\\) { console.log\\('[' + role + ']: ' + content.slice\\(0, 400\\)\\); console.log\\('---'\\); } else if \\(Array.isArray\\(content\\)\\) { content.forEach\\(c => { if \\(c && c.type === 'text' && c.text\\) { console.log\\('[' + role + ']: ' + c.text.slice\\(0, 400\\)\\); console.log\\('---'\\); } }\\); } } } catch\\(e\\) {} }\\); }\\);\")",
       "Bash(node -e \" const chunks = []; process.stdin.on\\('data', d => chunks.push\\(d\\)\\); process.stdin.on\\('end', \\(\\) => { const text = Buffer.concat\\(chunks\\).toString\\(\\); // Print first 3000 chars raw console.log\\(text.slice\\(0, 3000\\)\\); }\\);\")",
       "Bash(node -e ' *)",
-      "Bash(node -e \"const fs=require\\('fs'\\);const text=fs.readFileSync\\('C:/Users/JoeZ/.claude/projects/C--Users-JoeZ-Documents-ClaudeCode-my-MedPal/28ef7c3a-4be7-4a7a-83b8-d6ed61757eee.jsonl','utf8'\\);const lines=text.trim\\(\\).split\\('\\\\n'\\);const msgs=[];lines.forEach\\(line=>{try{const d=JSON.parse\\(line\\);if\\(d.type==='user'&&d.message&&Array.isArray\\(d.message.content\\)\\){d.message.content.forEach\\(c=>{if\\(c.type==='text'\\)msgs.push\\(c.text.slice\\(0,300\\)\\);}\\);}if\\(d.type==='user'&&d.message&&typeof d.message.content==='string'\\){msgs.push\\(d.message.content.slice\\(0,300\\)\\);}}catch\\(e\\){}}\\);msgs.slice\\(-10\\).forEach\\(m=>console.log\\(m,'---'\\)\\);\")"
+      "Bash(node -e \"const fs=require\\('fs'\\);const text=fs.readFileSync\\('C:/Users/JoeZ/.claude/projects/C--Users-JoeZ-Documents-ClaudeCode-my-MedPal/28ef7c3a-4be7-4a7a-83b8-d6ed61757eee.jsonl','utf8'\\);const lines=text.trim\\(\\).split\\('\\\\n'\\);const msgs=[];lines.forEach\\(line=>{try{const d=JSON.parse\\(line\\);if\\(d.type==='user'&&d.message&&Array.isArray\\(d.message.content\\)\\){d.message.content.forEach\\(c=>{if\\(c.type==='text'\\)msgs.push\\(c.text.slice\\(0,300\\)\\);}\\);}if\\(d.type==='user'&&d.message&&typeof d.message.content==='string'\\){msgs.push\\(d.message.content.slice\\(0,300\\)\\);}}catch\\(e\\){}}\\);msgs.slice\\(-10\\).forEach\\(m=>console.log\\(m,'---'\\)\\);\")",
+      "Bash(ls \"C:\\\\Users\\\\JoeZ\\\\Documents\\\\ClaudeCode\\\\aiHomeAssistant\")",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\JoeZ\\\\Documents\\\\ClaudeCode\\\\aiHomeAssistant\" -Force)",
+      "Bash(curl -s -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjMmI5ZTg4MjBkN2E0Mzg3YTBjNTM2ZjIzYzAzODkxZiIsImlhdCI6MTc3OTgzOTM4NywiZXhwIjoyMDk1MTk5Mzg3fQ.lXkKqOj0ATKsBoHgD4a-7BQGHjDsuIbowoBcLg7HcrM\" http://172.16.58.236:8123/api/states)",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(git rm *)",
+      "Bash(git reset *)",
+      "Bash(git add *)"
     ]
   }
 }
