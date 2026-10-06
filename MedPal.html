@@ -708,8 +708,8 @@ const ZH_SYM={
 ══════════════════════════════════════════════════════════════════════════ */
 const S={
   screen:'login',
-  currentBook:null,
-  cardIdx:0, cardFlipped:false,
+  currentBook:loadPos().book||null,
+  cardIdx:loadPos().idx[loadPos().book||'all']||0, cardFlipped:false,
   quizMode:'mc', quizIdx:0, quizPicked:null, quizSpelled:'',
   quizOptions:null, quizCorrect:0, quizOptionsFor:-1, quizScore:120,
   doctorPart:'chest', doctorSelected:new Set(), doctorDuration:'2 days',
@@ -766,6 +766,8 @@ function saveCV(v){try{localStorage.setItem('mp_cv',JSON.stringify(v));}catch{}}
 function allVocab(){return[...VOCAB,...loadCV()];}
 function loadDocWords(){try{return JSON.parse(localStorage.getItem('mp_dw')||'[]');}catch{return[];}}
 function saveDocWords(a){try{localStorage.setItem('mp_dw',JSON.stringify(a));}catch{}}
+function loadPos(){try{const p=JSON.parse(localStorage.getItem('mp_pos')||'{}');return{book:p.book||null,idx:p.idx||{}};}catch{return{book:null,idx:{}};}}
+function savePos(){try{const p=loadPos();p.book=S.currentBook;p.idx[S.currentBook||'all']=S.cardIdx;localStorage.setItem('mp_pos',JSON.stringify(p));}catch{}}
 function speak(text){
   if(!window.speechSynthesis)return;
   window.speechSynthesis.cancel();
@@ -956,6 +958,7 @@ function homeScreen(){
 function learnScreen(){
   const vocab=currentVocab();
   if(S.cardIdx>=vocab.length)S.cardIdx=0;
+  savePos();
   const v=vocab[S.cardIdx];
   const total=vocab.length;
   const pct=((S.cardIdx+1)/total*100).toFixed(1);
@@ -1661,7 +1664,7 @@ function bind(){
   document.querySelectorAll('[data-go]').forEach(el=>{
     el.addEventListener('click',e=>{
       e.stopPropagation();
-      if(el.dataset.book!==undefined){S.currentBook=el.dataset.book||null;S.cardIdx=0;}
+      if(el.dataset.book!==undefined){S.currentBook=el.dataset.book||null;S.cardIdx=loadPos().idx[S.currentBook||'all']||0;}
       go(el.dataset.go);
     });
   });
