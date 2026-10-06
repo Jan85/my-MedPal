@@ -768,12 +768,31 @@ function loadDocWords(){try{return JSON.parse(localStorage.getItem('mp_dw')||'[]
 function saveDocWords(a){try{localStorage.setItem('mp_dw',JSON.stringify(a));}catch{}}
 function loadPos(){try{const p=JSON.parse(localStorage.getItem('mp_pos')||'{}');return{book:p.book||null,idx:p.idx||{}};}catch{return{book:null,idx:{}};}}
 function savePos(){try{const p=loadPos();p.book=S.currentBook;p.idx[S.currentBook||'all']=S.cardIdx;localStorage.setItem('mp_pos',JSON.stringify(p));}catch{}}
+// Pick the most natural English voice installed (Premium/Enhanced/neural voices first)
+let _voice=null;
+function bestVoice(){
+  if(_voice||!window.speechSynthesis)return _voice;
+  const vs=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));
+  if(!vs.length)return null;
+  const score=v=>{const n=v.name;let s=0;
+    if(/premium/i.test(n))s+=50;if(/enhanced/i.test(n))s+=40;
+    if(/natural|neural|online/i.test(n))s+=35;if(/google/i.test(n))s+=20;
+    if(/^(ava|zoe|evan|nathan|samantha|allison|susan|tom)\b/i.test(n))s+=10;
+    if(/en[-_]US/i.test(v.lang))s+=5;if(v.localService===false)s+=3;
+    if(/compact|eloquence|albert|bad news|bahh|bells|boing|bubbles|cellos|jester|organ|superstar|trinoids|whisper|wobble|zarvox|good news|fred|junior|ralph|kathy|grandma|grandpa|rocko|sandy|shelley|flo|reed|eddy/i.test(n))s-=60;
+    return s;};
+  return _voice=vs.sort((a,b)=>score(b)-score(a))[0];
+}
+if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{_voice=null;bestVoice();};
+function makeUtt(text,rate){
+  const u=new SpeechSynthesisUtterance(text);
+  const v=bestVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-US';
+  u.rate=rate;u.pitch=1;return u;
+}
 function speak(text){
   if(!window.speechSynthesis)return;
   window.speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang='en-US';u.rate=0.82;u.pitch=1;
-  window.speechSynthesis.speak(u);
+  window.speechSynthesis.speak(makeUtt(text,0.82));
 }
 function loadProfile(){try{return JSON.parse(localStorage.getItem('mp_profile')||'{"name":"Lin Wei","zh":"林伟","bio":"Learning English for travel"}');}catch{return{name:'Lin Wei',zh:'林伟',bio:'Learning English for travel'};}}
 function saveProfile(p){try{localStorage.setItem('mp_profile',JSON.stringify(p));}catch{}}
@@ -902,14 +921,15 @@ function loginScreen(){
 }
 
 function homeScreen(){
+  const prof=loadProfile();
   return`<div class="screen" style="background:var(--beige)">
     ${sbar()}
     <div class="appbar">
       <div style="flex:1">
         <p style="font-size:12px;color:var(--ink-4);margin-bottom:1px">Good morning · 早上好</p>
-        <h2 style="font-size:20px;font-weight:700;color:var(--ink)">Lin Wei 👋</h2>
+        <h2 style="font-size:20px;font-weight:700;color:var(--ink)">${prof.name||'Friend'} 👋</h2>
       </div>
-      <div style="width:38px;height:38px;border-radius:19px;background:var(--mint-100);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--mint-700)">L</div>
+      <div style="width:38px;height:38px;border-radius:19px;background:var(--mint-100);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--mint-700)">${(prof.name||'?')[0].toUpperCase()}</div>
     </div>
     <div class="screen-scroll screen-pad">
       <div style="background:var(--ink);border-radius:20px;padding:18px 20px;margin-bottom:22px;box-shadow:var(--sh-3)">
@@ -1010,7 +1030,7 @@ function learnScreen(){
           </div>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+      <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:16px">
         <button class="btn btn-ghost" data-action="prev-card" ${S.cardIdx===0?'disabled':''} style="width:50px;height:50px;border-radius:15px;opacity:${S.cardIdx===0?.4:1}">${ic('back',20,'var(--ink)')}</button>
         <button class="btn btn-primary" data-action="know" style="padding:12px 22px;font-size:14px">Know it · 认识了 ✓</button>
         <button class="btn btn-ghost" data-action="next-card" ${S.cardIdx===total-1?'disabled':''} style="width:50px;height:50px;border-radius:15px;opacity:${S.cardIdx===total-1?.4:1}">${ic('arrow',20,'var(--ink)')}</button>
@@ -1703,8 +1723,7 @@ function bind(){
       if(window.speechSynthesis && sfx==='-card'){
         const word=currentVocab()[S.cardIdx]?.word||'';
         window.speechSynthesis.cancel();
-        const utt=new SpeechSynthesisUtterance(word);
-        utt.lang='en-US';utt.rate=0.85;
+        const utt=makeUtt(word,0.85);
         utt.onend=()=>bars.forEach(b=>b.classList.remove('active'));
         window.speechSynthesis.speak(utt);
       } else {
