@@ -715,6 +715,7 @@ const S={
   doctorPart:'chest', doctorSelected:new Set(), doctorDuration:'2 days',
   accent:'mint', tweaksOpen:false, profileEditOpen:false,
   reviewSession:[], reviewIdx:0, reviewFlipped:false, reviewDone:false, reviewKnow:0,
+  tmpWord:'', tmpZh:'',
   addSearch:'', addShowForm:false, addWord:'', addZh:'', addDef:'', addBookFilter:'All',
   dwSearch:'',
 };
@@ -723,7 +724,10 @@ const S={
    HELPERS
 ══════════════════════════════════════════════════════════════════════════ */
 function go(sc){S.screen=sc;S.cardFlipped=false;render()}
-function currentVocab(){return S.currentBook?VOCAB.filter(x=>x.book===S.currentBook):VOCAB;}
+function currentVocab(){
+  if(S.currentBook==='temp'){const t=loadTmp();if(t.length)return t;S.currentBook=null;S.cardIdx=loadPos().idx.all||0;}
+  return S.currentBook?VOCAB.filter(x=>x.book===S.currentBook):VOCAB;
+}
 
 function applyAccent(key){
   const c=ACCENT_COLORS[key];const r=document.documentElement.style;
@@ -764,6 +768,10 @@ function saveRD(d){try{localStorage.setItem('mp_rv',JSON.stringify(d));}catch{}}
 function loadCV(){try{return JSON.parse(localStorage.getItem('mp_cv')||'[]');}catch{return[];}}
 function saveCV(v){try{localStorage.setItem('mp_cv',JSON.stringify(v));}catch{}}
 function allVocab(){return[...VOCAB,...loadCV()];}
+// Quick Study words live in sessionStorage: kept while the app is open, gone once it is closed
+function loadTmp(){try{return JSON.parse(sessionStorage.getItem('mp_tmp')||'[]');}catch{return[];}}
+function saveTmp(a){try{sessionStorage.setItem('mp_tmp',JSON.stringify(a));}catch{}}
+function esc(t){return String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function loadDocWords(){try{return JSON.parse(localStorage.getItem('mp_dw')||'[]');}catch{return[];}}
 function saveDocWords(a){try{localStorage.setItem('mp_dw',JSON.stringify(a));}catch{}}
 function loadPos(){try{const p=JSON.parse(localStorage.getItem('mp_pos')||'{}');return{book:p.book||null,idx:p.idx||{}};}catch{return{book:null,idx:{}};}}
@@ -872,10 +880,10 @@ function tabbar(active){
   }).join('')}</div>`;
 }
 
-function waveBtn(id=''){
-  return`<button class="btn" data-action="play${id}" style="background:var(--mint-50);border-radius:12px;padding:9px 16px;gap:8px">
-    <div class="wave-wrap">${[0,1,2,3].map(()=>`<div class="wave-bar"></div>`).join('')}</div>
-    <span style="font-size:14px;font-weight:600;color:var(--accent)">Play</span>
+function waveBtn(id='',big=false){
+  return`<button class="btn" data-action="play${id}" style="background:var(--mint-50);border-radius:${big?16:12}px;padding:${big?'14px 28px':'9px 16px'};gap:${big?10:8}px">
+    <div class="wave-wrap"${big?' style="height:24px;gap:4px"':''}>${[0,1,2,3].map(()=>`<div class="wave-bar"${big?' style="width:4px"':''}></div>`).join('')}</div>
+    <span style="font-size:${big?18:14}px;font-weight:600;color:var(--accent)">Play</span>
   </button>`;
 }
 
@@ -920,6 +928,30 @@ function loginScreen(){
   </div>`;
 }
 
+function quickStudyCard(){
+  const tmp=loadTmp();
+  const inp='padding:10px 12px;border-radius:11px;border:1.5px solid var(--hair);font-size:14px;background:var(--paper);min-width:0';
+  return`<div class="card" style="padding:16px;margin-bottom:22px">
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">
+      <h3 style="font-size:16px;font-weight:700;color:var(--ink);flex:1">Quick Study · 临时单词</h3>
+      ${tmp.length?`<button class="btn" data-action="tmp-clear" style="font-size:12px;color:var(--ink-4);padding:2px 4px">Clear all</button>`:''}
+    </div>
+    <p style="font-size:12px;color:var(--ink-4);margin-bottom:12px">Removed when you close the app · 关闭应用后自动删除</p>
+    <div style="display:flex;gap:8px">
+      <input id="tmp-word" placeholder="English word *" autocapitalize="off" value="${esc(S.tmpWord)}" style="${inp};flex:1.3">
+      <input id="tmp-zh" placeholder="中文 (可选)" value="${esc(S.tmpZh)}" style="${inp};flex:1">
+      <button class="btn btn-primary" data-action="tmp-add" style="width:44px;height:44px;border-radius:12px;flex-shrink:0;padding:0">${ic('plus',18,'#fff')}</button>
+    </div>
+    ${tmp.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+      ${tmp.map((w,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--mint-50);border-radius:999px;padding:5px 6px 5px 11px;font-size:13px;color:var(--mint-700);font-weight:600">
+        ${esc(w.word)}${w.zh?` <span style="font-weight:400">${esc(w.zh)}</span>`:''}
+        <button class="btn" data-tmp-del="${i}" style="padding:3px;border-radius:999px">${ic('close',12,'var(--mint-700)')}</button>
+      </span>`).join('')}
+    </div>
+    <button class="btn btn-primary" data-go="learn" data-book="temp" style="width:100%;margin-top:12px;padding:12px;font-size:14px;gap:8px">${ic('book',16,'#fff')} Study ${tmp.length} word${tmp.length===1?'':'s'} · 开始学习</button>`:''}
+  </div>`;
+}
+
 function homeScreen(){
   const prof=loadProfile();
   return`<div class="screen" style="background:var(--beige)">
@@ -947,6 +979,7 @@ function homeScreen(){
             </div>`).join('')}
         </div>
       </div>
+      ${quickStudyCard()}
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
         <h3 style="font-size:16px;font-weight:700;color:var(--ink)">Books · 课本</h3>
         <button data-go="words" style="border:none;background:transparent;cursor:pointer;font-size:13px;color:var(--ink-3)">See all →</button>
@@ -982,7 +1015,7 @@ function learnScreen(){
   const v=vocab[S.cardIdx];
   const total=vocab.length;
   const pct=((S.cardIdx+1)/total*100).toFixed(1);
-  const bookInfo=S.currentBook?BOOKS.find(b=>b.id===S.currentBook):null;
+  const bookInfo=S.currentBook==='temp'?{title:'Quick Study · 临时单词',zhTitle:'Temporary'}:S.currentBook?BOOKS.find(b=>b.id===S.currentBook):null;
   return`<div class="screen" style="background:var(--beige)">
     ${sbar()}
     <div style="padding:12px 20px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0">
@@ -1002,31 +1035,31 @@ function learnScreen(){
         <div class="flip-inner" id="flip-inner">
           <div class="flip-face" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px">
             <div style="width:72px;height:72px;border-radius:36px;background:var(--mint-50);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px">${v.emoji}</div>
-            <div style="font-size:38px;font-weight:700;font-family:var(--serif);color:var(--ink);text-align:center;margin-bottom:6px">${v.word}</div>
-            <div style="font-size:15px;color:var(--ink-3);font-family:var(--mono);margin-bottom:16px">${v.ipa}</div>
-            ${waveBtn('-card')}
+            <div style="font-size:38px;font-weight:700;font-family:var(--serif);color:var(--ink);text-align:center;margin-bottom:6px;overflow-wrap:anywhere">${esc(v.word)}</div>
+            <div style="font-size:15px;color:var(--ink-3);font-family:var(--mono);margin-bottom:16px">${esc(v.ipa)}</div>
+            ${waveBtn('-card',true)}
             <p style="font-size:11px;color:var(--ink-4);margin-top:14px">Tap to flip · 点击翻转</p>
           </div>
           <div class="flip-face flip-back" style="padding:18px 20px;overflow-y:auto">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
               <div>
-                <div style="font-size:22px;font-weight:700;font-family:var(--serif);color:var(--ink)">${v.word}</div>
-                <div style="font-size:12px;color:var(--ink-3);font-family:var(--mono)">${v.ipa} · ${v.pos}</div>
+                <div style="font-size:22px;font-weight:700;font-family:var(--serif);color:var(--ink)">${esc(v.word)}</div>
+                <div style="font-size:12px;color:var(--ink-3);font-family:var(--mono)">${[v.ipa,v.pos].filter(Boolean).map(esc).join(' · ')}</div>
               </div>
-              <div class="tag" style="background:var(--mint-50);color:var(--mint-700)">${v.zh}</div>
+              ${v.zh?`<div class="tag" style="background:var(--mint-50);color:var(--mint-700)">${esc(v.zh)}</div>`:''}
             </div>
-            <div style="background:var(--beige);border-radius:12px;padding:11px 13px;margin-bottom:11px">
-              <p style="font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:5px">"${v.sentence}"</p>
-              <p style="font-size:12px;color:var(--ink-3);line-height:1.65">${v.zhSentence}</p>
-            </div>
-            <div style="margin-bottom:11px">
+            ${v.sentence?`<div style="background:var(--beige);border-radius:12px;padding:11px 13px;margin-bottom:11px">
+              <p style="font-size:13px;color:var(--ink-2);line-height:1.65;margin-bottom:5px">"${esc(v.sentence)}"</p>
+              <p style="font-size:12px;color:var(--ink-3);line-height:1.65">${esc(v.zhSentence)}</p>
+            </div>`:''}
+            ${v.def?`<div style="margin-bottom:11px">
               <div style="font-size:10px;font-weight:700;color:var(--ink-4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Definition · 释义</div>
-              <p style="font-size:14px;color:var(--ink-2);line-height:1.6">${v.def}</p>
-            </div>
-            <div style="background:var(--mint-50);border-radius:10px;padding:10px 12px">
+              <p style="font-size:14px;color:var(--ink-2);line-height:1.6">${esc(v.def)}</p>
+            </div>`:''}
+            ${v.mnemonic?`<div style="background:var(--mint-50);border-radius:10px;padding:10px 12px">
               <div style="font-size:11px;font-weight:700;color:var(--mint-700);margin-bottom:4px">💡 Mnemonic · 记忆法</div>
-              <p style="font-size:13px;color:var(--mint-700)">${v.mnemonic}</p>
-            </div>
+              <p style="font-size:13px;color:var(--mint-700)">${esc(v.mnemonic)}</p>
+            </div>`:''}
           </div>
         </div>
       </div>
@@ -1710,7 +1743,7 @@ function bind(){
   document.querySelector('[data-action="know"]')?.addEventListener('click',e=>{
     e.stopPropagation();
     const cv=currentVocab();
-    const w=cv[S.cardIdx];if(w)markWord(w.id,true);
+    const w=cv[S.cardIdx];if(w&&S.currentBook!=='temp')markWord(w.id,true);
     if(S.cardIdx<cv.length-1){S.cardIdx++;S.cardFlipped=false;render();}
   });
 
@@ -1877,6 +1910,29 @@ function bind(){
   document.getElementById('clear-search')?.addEventListener('click',()=>{
     S.addSearch='';render();
   });
+
+  // ── Home: Quick Study (temporary words) ─────────────────────────────────
+  document.getElementById('tmp-word')?.addEventListener('input',e=>{S.tmpWord=e.target.value;});
+  document.getElementById('tmp-zh')?.addEventListener('input',e=>{S.tmpZh=e.target.value;});
+  const addTmp=()=>{
+    const word=S.tmpWord.trim();
+    if(!word){document.getElementById('tmp-word')?.focus();return;}
+    const tmp=loadTmp();
+    if(!tmp.some(w=>w.word.toLowerCase()===word.toLowerCase())){
+      const known=allVocab().find(w=>w.word.toLowerCase()===word.toLowerCase());
+      tmp.push(known?{...known,id:'tmp-'+Date.now(),zh:S.tmpZh.trim()||known.zh}
+        :{id:'tmp-'+Date.now(),word,zh:S.tmpZh.trim(),def:'',ipa:'',pos:'',emoji:'📝',sentence:'',zhSentence:'',mnemonic:''});
+      saveTmp(tmp);
+    }
+    S.tmpWord='';S.tmpZh='';render();
+    document.getElementById('tmp-word')?.focus();
+  };
+  document.querySelector('[data-action="tmp-add"]')?.addEventListener('click',addTmp);
+  ['tmp-word','tmp-zh'].forEach(id=>document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addTmp();}}));
+  document.querySelectorAll('[data-tmp-del]').forEach(el=>{
+    el.addEventListener('click',e=>{e.stopPropagation();const t=loadTmp();t.splice(parseInt(el.dataset.tmpDel),1);saveTmp(t);render();});
+  });
+  document.querySelector('[data-action="tmp-clear"]')?.addEventListener('click',()=>{saveTmp([]);render();});
 
   // ── Words: book filter ───────────────────────────────────────────────────
   document.querySelectorAll('[data-book-filter]').forEach(el=>{
