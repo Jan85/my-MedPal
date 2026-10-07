@@ -771,6 +771,15 @@ function allVocab(){return[...VOCAB,...loadCV()];}
 // Quick Study words live in sessionStorage: kept while the app is open, gone once it is closed
 function loadTmp(){try{return JSON.parse(sessionStorage.getItem('mp_tmp')||'[]');}catch{return[];}}
 function saveTmp(a){try{sessionStorage.setItem('mp_tmp',JSON.stringify(a));}catch{}}
+function addTmpWord(word,zh){
+  if(inTmp(word))return;
+  const tmp=loadTmp();
+  const known=allVocab().find(w=>w.word.toLowerCase()===word.toLowerCase());
+  tmp.push(known?{...known,id:'tmp-'+Date.now(),zh:zh||known.zh}
+    :{id:'tmp-'+Date.now(),word,zh,def:'',ipa:'',pos:'',emoji:'📝',sentence:'',zhSentence:'',mnemonic:''});
+  saveTmp(tmp);
+}
+function inTmp(word){const w=word.toLowerCase();return loadTmp().some(x=>x.word.toLowerCase()===w);}
 function esc(t){return String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function loadDocWords(){try{return JSON.parse(localStorage.getItem('mp_dw')||'[]');}catch{return[];}}
 function saveDocWords(a){try{localStorage.setItem('mp_dw',JSON.stringify(a));}catch{}}
@@ -1034,6 +1043,9 @@ function learnScreen(){
       <div class="flip-card">
         <div class="flip-inner" id="flip-inner">
           <div class="flip-face" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px">
+            ${S.currentBook!=='temp'?(()=>{const on=inTmp(v.word);return`<button class="btn" data-action="tmp-toggle" aria-label="${on?'Remove from':'Add to'} Quick Study"
+              style="position:absolute;top:12px;right:12px;gap:4px;padding:7px 11px 7px 9px;border-radius:999px;font-size:12px;font-weight:600;
+              background:${on?'var(--accent)':'var(--mint-50)'};color:${on?'#fff':'var(--accent)'}">${ic(on?'check':'plus',14,on?'#fff':'var(--accent)')}${on?'In Quick Study':'Quick Study'}</button>`;})():''}
             <div style="width:72px;height:72px;border-radius:36px;background:var(--mint-50);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px">${v.emoji}</div>
             <div style="font-size:38px;font-weight:700;font-family:var(--serif);color:var(--ink);text-align:center;margin-bottom:6px;overflow-wrap:anywhere">${esc(v.word)}</div>
             <div style="font-size:15px;color:var(--ink-3);font-family:var(--mono);margin-bottom:16px">${esc(v.ipa)}</div>
@@ -1917,13 +1929,7 @@ function bind(){
   const addTmp=()=>{
     const word=S.tmpWord.trim();
     if(!word){document.getElementById('tmp-word')?.focus();return;}
-    const tmp=loadTmp();
-    if(!tmp.some(w=>w.word.toLowerCase()===word.toLowerCase())){
-      const known=allVocab().find(w=>w.word.toLowerCase()===word.toLowerCase());
-      tmp.push(known?{...known,id:'tmp-'+Date.now(),zh:S.tmpZh.trim()||known.zh}
-        :{id:'tmp-'+Date.now(),word,zh:S.tmpZh.trim(),def:'',ipa:'',pos:'',emoji:'📝',sentence:'',zhSentence:'',mnemonic:''});
-      saveTmp(tmp);
-    }
+    addTmpWord(word,S.tmpZh.trim());
     S.tmpWord='';S.tmpZh='';render();
     document.getElementById('tmp-word')?.focus();
   };
@@ -1931,6 +1937,13 @@ function bind(){
   ['tmp-word','tmp-zh'].forEach(id=>document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addTmp();}}));
   document.querySelectorAll('[data-tmp-del]').forEach(el=>{
     el.addEventListener('click',e=>{e.stopPropagation();const t=loadTmp();t.splice(parseInt(el.dataset.tmpDel),1);saveTmp(t);render();});
+  });
+  document.querySelector('[data-action="tmp-toggle"]')?.addEventListener('click',e=>{
+    e.stopPropagation();
+    const w=currentVocab()[S.cardIdx];if(!w)return;
+    if(inTmp(w.word))saveTmp(loadTmp().filter(x=>x.word.toLowerCase()!==w.word.toLowerCase()));
+    else addTmpWord(w.word,'');
+    render();
   });
   document.querySelector('[data-action="tmp-clear"]')?.addEventListener('click',()=>{saveTmp([]);render();});
 
